@@ -1,0 +1,6 @@
+.env
+.envrc
+.python-version
+*/__pycache__/
+*.egg-info/
+*.csv
