@@ -16,3 +16,4 @@ sklearn
 fastapi
 uvicorn
 scipy
+cv2
