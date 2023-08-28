@@ -12,7 +12,7 @@ pylint
 ipdb
 jupyterlab
 scikit-learn
-sklean
+sklearn
 fastapi
 uvicorn
 scipy
