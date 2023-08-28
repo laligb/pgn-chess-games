@@ -5,3 +5,14 @@ streamlit
 matplotlib
 seaborn
 pytest
+ipython
+ipykernel
+pytest
+pylint
+ipdb
+jupyterlab
+scikit-learn
+sklean
+fastapi
+uvicorn
+scipy
