@@ -17,3 +17,6 @@ fastapi
 uvicorn
 scipy
 opencv-python
+requests
+python-multipart
+Pillow
