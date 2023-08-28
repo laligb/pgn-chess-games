@@ -12,8 +12,8 @@ pylint
 ipdb
 jupyterlab
 scikit-learn
-sklearn
+scikit-learn
 fastapi
 uvicorn
 scipy
-cv2
+opencv-python
