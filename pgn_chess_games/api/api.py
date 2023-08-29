@@ -1,7 +1,7 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 import numpy as np
-from pgn_chess_games.utils import img_bytes_to_num, mockup_predict
+from pgn_chess_games.utils import *
 
 # from pgn-chess-games.model import Model #TODO import the model
 
@@ -51,8 +51,11 @@ async def receive_image(img: UploadFile = File(...)):
     """
     bytes_image = await img.read()
 
-    # Translate img bytes to numpy array
+    # Translate img bytes to 1D numpy array
     num_img = img_bytes_to_num(bytes_image)
+
+    # Preprocess image to cut it into boxes
+    all_boxes = preproc_image(num_img)
 
     # Call the model
     # model = app.state.model
