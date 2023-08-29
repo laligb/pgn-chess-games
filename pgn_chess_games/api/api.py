@@ -1,6 +1,5 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
-import numpy as np
 from pgn_chess_games.utils import *
 
 # from pgn-chess-games.model import Model #TODO import the model
@@ -59,6 +58,7 @@ async def receive_image(img: UploadFile = File(...)):
 
     # Call the model
     # model = app.state.model
-    predict = mockup_predict()  # TODO Call the model
+    json_moves = mockup_predict()  # TODO Call the model
+    pgn_moves = json_to_pgn(json_moves)
 
-    return predict
+    return pgn_moves
