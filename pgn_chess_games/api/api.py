@@ -3,11 +3,10 @@ from fastapi.middleware.cors import CORSMiddleware
 import numpy as np
 from pgn_chess_games.utils import img_bytes_to_num, mockup_predict
 
-from
-#from pgn-chess-games.model import Model #TODO import the model
+# from pgn-chess-games.model import Model #TODO import the model
 
 app = FastAPI()
-#app.state.model = Model() #TODO assign the model
+# app.state.model = Model() #TODO assign the model
 
 # Allowing all middleware is optional, but good practice for dev purposes
 app.add_middleware(
@@ -18,7 +17,20 @@ app.add_middleware(
     allow_headers=["*"],  # Allows all headers
 )
 
-#Endpoint where the images are posted
+
+# Generic endpoint
+@app.get("/")
+def hello():
+    """
+    Generic root endpoint
+
+    Returns:
+        json: Returns a hello world
+    """
+    return {"response": "Hello world"}
+
+
+# Endpoint where the images are posted
 @app.post("/upload")
 def receive_image(img: UploadFile = File(...)):
     """
@@ -37,11 +49,11 @@ def receive_image(img: UploadFile = File(...)):
             "black": ["move 1","move 2","move 3"]
         }
     """
-    #Translate img bytes to numpy array
+    # Translate img bytes to numpy array
     num_img = img_bytes_to_num(img)
 
-    #Call the model
-    #model = app.state.model
-    predict = mockup_predict(num_img) #TODO Call the model
+    # Call the model
+    # model = app.state.model
+    predict = mockup_predict()  # TODO Call the model
 
-    return {"img": img.shape}
+    return predict
