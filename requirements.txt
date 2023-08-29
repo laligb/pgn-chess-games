@@ -12,7 +12,6 @@ pylint
 ipdb
 jupyterlab
 scikit-learn
-scikit-learn
 fastapi
 uvicorn
 scipy
@@ -20,3 +19,4 @@ opencv-python
 requests
 python-multipart
 Pillow
+scikit-image
