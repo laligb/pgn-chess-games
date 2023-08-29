@@ -8,20 +8,21 @@ from skimage.segmentation import clear_border
 from skimage.measure import label, regionprops
 from skimage.morphology import closing, square
 from skimage.color import label2rgb
+import base64
 
 
-def img_bytes_to_num(bytes_img: bytes):
+def img_base64_to_num(base64_img: str) -> int:
     """Transform image in bytes to numpy array.
 
     Args:
-        img (bytes): Image in byte form.
+        img (bytes): Image in bytes form.
 
     Returns:
         int: 2D Numpy array.
     """
-
-    img = io.BytesIO(bytes_img)
-    pill_img = Image.open(img)
+    decoded_img = base64.b64decode(base64_img)
+    bytes_img = io.BytesIO(decoded_img)
+    pill_img = Image.open(bytes_img)
     grayscale_img = ImageOps.grayscale(pill_img)
     nparray_img = np.array(grayscale_img)
     return nparray_img

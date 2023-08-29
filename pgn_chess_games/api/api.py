@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File
+from fastapi import FastAPI, Form
 from fastapi.middleware.cors import CORSMiddleware
 from pgn_chess_games.utils import *
 
@@ -31,7 +31,7 @@ def hello():
 
 # Endpoint where the images are posted
 @app.post("/upload")
-async def receive_image(img: UploadFile = File(...)):
+async def receive_image(filename: str = Form(...), img: str = Form(...)) -> str:
     """
     Endpoint to process the images and send them to the model to get a
     prediction.
@@ -48,10 +48,10 @@ async def receive_image(img: UploadFile = File(...)):
             "black": ["move 1","move 2","move 3"]
         }
     """
-    bytes_image = await img.read()
+    base64_image = img
 
-    # Translate img bytes to 1D numpy array
-    num_img = img_bytes_to_num(bytes_image)
+    # Translate img in base64 to 2D numpy array
+    num_img = img_base64_to_num(base64_image)
 
     # Preprocess image to cut it into boxes
     all_boxes = preproc_image(num_img)
