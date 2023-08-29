@@ -32,7 +32,7 @@ def hello():
 
 # Endpoint where the images are posted
 @app.post("/upload")
-def receive_image(img: UploadFile = File(...)):
+async def receive_image(img: UploadFile = File(...)):
     """
     Endpoint to process the images and send them to the model to get a
     prediction.
@@ -49,8 +49,10 @@ def receive_image(img: UploadFile = File(...)):
             "black": ["move 1","move 2","move 3"]
         }
     """
+    bytes_image = await img.read()
+
     # Translate img bytes to numpy array
-    num_img = img_bytes_to_num(img)
+    num_img = img_bytes_to_num(bytes_image)
 
     # Call the model
     # model = app.state.model

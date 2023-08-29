@@ -3,7 +3,7 @@ from PIL import Image
 import io
 
 
-def img_bytes_to_num(img):
+def img_bytes_to_num(bytes_img: bytes):
     """Transform image in bytes to numpy array.
 
     Args:
@@ -12,8 +12,12 @@ def img_bytes_to_num(img):
     Returns:
         int: Numpy array.
     """
-    result = np.array(Image.open(io.BytesIO(img)))
-    return result
+
+    img = io.BytesIO(bytes_img)
+    type(img)
+    pill_img = Image.open(img)
+    nparray_img = np.array(pill_img)
+    return nparray_img
 
 
 def mockup_predict():
