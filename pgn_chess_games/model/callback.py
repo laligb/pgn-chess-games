@@ -1,6 +1,5 @@
 import numpy as np
 import tensorflow
-from pgn_chess_games.model.data import get_data, image_processing
 
 
 def calculate_edit_distance(labels, predictions, max_len=27):
@@ -29,7 +28,6 @@ def callback_indices(validation_ds):
     ## Creating batches
     validation_images = []
     validation_labels = []
-    breakpoint()
     for batch in validation_ds:
         validation_images.append(batch["image"])
         validation_labels.append(batch["label"])
@@ -37,13 +35,14 @@ def callback_indices(validation_ds):
 
 
 class EditDistanceCallback(tensorflow.keras.callbacks.Callback):
-    def __init__(self, pred_model):
+    def __init__(self, pred_model, validation_ds):
         super().__init__()
         self.prediction_model = pred_model
+        self.validation_ds = validation_ds
 
     def on_epoch_end(self, epoch, logs=None):
         edit_distances = []
-        validation_images, validation_labels = callback_indices()
+        validation_images, validation_labels = callback_indices(self.validation_ds)
 
         for i in range(len(validation_images)):
             labels = validation_labels[i]

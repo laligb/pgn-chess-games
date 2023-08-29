@@ -18,7 +18,6 @@ LOCAL_DATA_PATH = os.path.join(os.environ["LOCAL_DATA_PATH"], "words")
 
 def define_data(path):
     ## Defining the shuffled dataset
-    print("✅ Shuffling local data")
     words_list = []
     words = open(f"{LOCAL_DATA_PATH}/words.txt", "r").readlines()
     for line in words:
@@ -45,10 +44,6 @@ def database_split(words_list):
 
     assert len(words_list) == len(data_train) + len(data_test) + len(data_val)
 
-    print(f"Total training samples: {len(data_train)}")
-    print(f"Total validation samples: {len(data_val)}")
-    print(f"Total test samples: {len(data_test)}")
-
     return data_train, data_val, data_test
 
 
@@ -56,7 +51,6 @@ def get_image_paths_and_labels(samples):
     LOCAL_DATA_PATH = os.path.join(os.environ["LOCAL_DATA_PATH"], "words")
     paths = []
     corrected_samples = []
-    breakpoint()
     for i, file_line in enumerate(samples):
         line_split = file_line.strip()
         line_split = line_split.split(" ")
@@ -82,19 +76,14 @@ def get_data(words_list):
 
     ## Create train, val and test data based on shuffled database
     data_train, data_val, data_test = database_split(words_list)
-    print("✅ Data split to train, val, test")
     return data_train, data_val, data_test
 
 
-def get_constants():
-    LOCAL_DATA_PATH = os.path.join(os.environ["LOCAL_DATA_PATH"], "words")
-    dt_tr, _, _ = get_data(LOCAL_DATA_PATH)
-    _, tr_lbl = get_image_paths_and_labels(dt_tr)
-
+def get_constants(validation_ds):
     ## Compute vocabulary size of the dataset
     characters = set()
     max_len = 0
-    for label in tr_lbl:
+    for label in validation_ds:
         label = label.split(" ")[-1].strip()
     for char in label:
         characters.add(char)
@@ -104,40 +93,14 @@ def get_constants():
     return characters, max_len
 
 
-def image_processing(data_train, data_val, data_test):
-    ## Obtain the paths and labels for each set
-    train_img_paths, train_labels = get_image_paths_and_labels(data_train)
-    validation_img_paths, validation_labels = get_image_paths_and_labels(data_val)
-    test_img_paths, test_labels = get_image_paths_and_labels(data_test)
-    print("✅ Obtaining the labels for shuffled dataset")
-
-    batch_size = 64
-    padding_token = 99
-
+def cleaning_labels(labels):
     ## Clean the labels
-    train_labels_clean = clean_label(train_labels)
-    val_labels_clean = clean_label(validation_labels)
-    test_labels_clean = clean_label(test_labels)
-    print("✅ Labels Cleaned")
-
-    ## Produce dataset for model
-    print("✅ Preprocessing image for final dataset")
-
-    characters, max_len = get_constants()
-
-    train_ds = prepare_dataset(train_img_paths, train_labels_clean)
-    validation_ds = prepare_dataset(validation_img_paths, val_labels_clean)
-    test_ds = prepare_dataset(test_img_paths, test_labels_clean)
-
-    return train_ds, validation_ds, test_ds
-
-
-def clean_label(labels):
-    cleaned_labels = []
+    clean_labels = []
     for label in labels:
         label = label.split(" ")[-1].strip()
-        cleaned_labels.append(label)
-    return cleaned_labels
+        clean_labels.append(label)
+
+    return clean_labels
 
 
 def distortion_free_resize(image, img_size):
@@ -175,39 +138,3 @@ def distortion_free_resize(image, img_size):
     image = tensorflow.transpose(image, perm=[1, 0, 2])
     image = tensorflow.image.flip_left_right(image)
     return image
-
-
-def preprocess_image(image_path, img_size=(128, 32)):
-    image = tensorflow.io.read_file(image_path)
-    image = tensorflow.image.decode_png(image, 1)
-    image = distortion_free_resize(image, img_size)
-    image = tensorflow.cast(image, tensorflow.float32) / 255.0
-    return image
-
-
-def vectorize_label(label, padding_token=99):
-    # Mapping characters to integers.
-    characters, max_len = get_constants()
-    char_to_num = StringLookup(vocabulary=list(characters), mask_token=None)
-
-    label = char_to_num(tensorflow.strings.unicode_split(label, input_encoding="UTF-8"))
-    length = tensorflow.shape(label)[0]
-    pad_amount = max_len - length
-    label = tensorflow.pad(
-        label, paddings=[[0, pad_amount]], constant_values=padding_token
-    )
-    return label
-
-
-def process_images_labels(image_path, label):
-    image = preprocess_image(image_path)
-    label = vectorize_label(label)
-    return {"image": image, "label": label}
-
-
-def prepare_dataset(image_paths, labels, batch_size=64):
-    AUTOTUNE = tensorflow.data.AUTOTUNE
-    dataset = tensorflow.data.Dataset.from_tensor_slices((image_paths, labels)).map(
-        process_images_labels, num_parallel_calls=AUTOTUNE
-    )
-    return dataset.batch(batch_size).cache().prefetch(AUTOTUNE)
