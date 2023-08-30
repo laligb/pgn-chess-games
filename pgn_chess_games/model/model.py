@@ -85,13 +85,6 @@ def initialize_model(img_size):
     return model
 
 
-def initialize_pred_model(model):
-    pred_model = tensorflow.keras.models.Model(
-        model.get_layer(name="image").input, model.get_layer(name="dense2").output
-    )
-    return pred_model
-
-
 def decode_batch_predictions(pred):
     input_len = np.ones(pred.shape[0]) * pred.shape[1]
     results = tensorflow.keras.backend.ctc_decode(
