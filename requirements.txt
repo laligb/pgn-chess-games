@@ -20,3 +20,4 @@ requests
 python-multipart
 Pillow
 scikit-image
+google-cloud-storage

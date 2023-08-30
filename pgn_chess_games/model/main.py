@@ -16,13 +16,12 @@ from pgn_chess_games.model.data import (
 )
 from pgn_chess_games.model.model import (
     initialize_model,
-    initialize_pred_model,
     decode_batch_predictions,
 )
 from pgn_chess_games.model.callback import EditDistanceCallback
 from pgn_chess_games.model.properties import model_properties
 from pgn_chess_games.model.registry import save_model, load_model
-
+from pgn_chess_games.utils import img_base64_to_num, preproc_image
 
 LOCAL_DATA_PATH = os.path.join(os.environ["LOCAL_DATA_PATH"], "words")
 
@@ -69,12 +68,14 @@ def main():
 
     print(f"⏳ Initializing model")
     model = initialize_model(img_size)
-    prediction_model = initialize_pred_model(model)
+    prediction_model = tensorflow.keras.models.Model(
+        model.get_layer(name="image").input, model.get_layer(name="dense2").output
+    )
     edit_distance_callback = EditDistanceCallback(prediction_model, validation_ds)
     print(f"✅ Model initialized")
 
     # Train the model.
-    epochs = 1
+    epochs = 50
     print(f"⏳ Training model with {epochs} epochs")
 
     history = model.fit(
@@ -87,11 +88,11 @@ def main():
     save_model(model=model)
 
 
+# TODO align preprocessing with API
 def prediction(images):
-    ## Prepare the images into dataset
-    paths, labels = get_image_paths_and_labels(images)
-    labels_cleaned = cleaning_labels(labels)
-    images_ds = prepare_dataset(paths, labels_cleaned)
+    img_array = img_base64_to_num(images)
+    img_boxes = preproc_image(img_array)
+    images_ds = tensorflow.data.Dataset.from_tensor_slices(img_boxes)
 
     model = load_model()
     preds = model.predict(images_ds)
