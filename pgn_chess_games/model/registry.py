@@ -24,3 +24,25 @@ def save_model(model: keras.Model = None) -> None:
     print("✅ Model saved to GCS")
 
     return None
+
+
+def load_model():
+    BUCKET_NAME = os.environ.get("BUCKET_NAME")
+    LOCAL_DATA_PATH = os.environ.get("LOCAL_DATA_PATH")
+    client = storage.Client()
+    blobs = list(client.get_bucket(BUCKET_NAME).list_blobs(prefix="model"))
+
+    try:
+        latest_blob = max(blobs, key=lambda x: x.updated)
+        latest_model_path_to_save = os.path.join(LOCAL_DATA_PATH, latest_blob.name)
+        latest_blob.download_to_filename(latest_model_path_to_save)
+
+        latest_model = keras.models.load_model(latest_model_path_to_save)
+
+        print("✅ Latest model downloaded from cloud storage")
+
+        return latest_model
+    except:
+        print(f"\n❌ No model found in GCS bucket {BUCKET_NAME}")
+
+        return None

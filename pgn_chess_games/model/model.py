@@ -1,7 +1,11 @@
 import os
+import numpy as np
 
 import tensorflow
 from tensorflow import keras
+from pgn_chess_games.model.properties import model_properties
+
+from tensorflow.keras.layers import StringLookup
 
 
 class CTCLayer(keras.layers.Layer):
@@ -79,3 +83,33 @@ def initialize_model(img_size):
     # Compile the model and return.
     model.compile(optimizer=opt)
     return model
+
+
+def initialize_pred_model(model):
+    pred_model = tensorflow.keras.models.Model(
+        model.get_layer(name="image").input, model.get_layer(name="dense2").output
+    )
+    return pred_model
+
+
+def decode_batch_predictions(pred):
+    input_len = np.ones(pred.shape[0]) * pred.shape[1]
+    results = tensorflow.keras.backend.ctc_decode(
+        pred, input_length=input_len, greedy=True
+    )[0][0][:, :21]
+
+    # Iterate over the results and get back the text.
+    char_to_num = StringLookup(
+        vocabulary=list(model_properties.characters), mask_token=None
+    )
+    num_to_char = StringLookup(
+        vocabulary=char_to_num.get_vocabulary(), mask_token=None, invert=True
+    )
+    output_text = []
+    for res in results:
+        res = tensorflow.gather(
+            res, tensorflow.where(tensorflow.math.not_equal(res, -1))
+        )
+        res = tensorflow.strings.reduce_join(num_to_char(res)).numpy().decode("utf-8")
+        output_text.append(res)
+    return output_text
