@@ -7,10 +7,7 @@ from PIL import Image
 import tensorflow
 from tensorflow.keras.layers import StringLookup
 from tensorflow import keras
-
-## Setting a set random seed to ensure consistency of shuffle
-np.random.seed(42)
-tensorflow.random.set_seed(42)
+from pgn_chess_games.model.properties import model_properties
 
 ## Local data path where dataset is stored
 LOCAL_DATA_PATH = os.path.join(os.environ["LOCAL_DATA_PATH"], "words")
@@ -79,18 +76,23 @@ def get_data(words_list):
     return data_train, data_val, data_test
 
 
-def get_constants(validation_ds):
+def get_constants(labels):
     ## Compute vocabulary size of the dataset
+    clean_labels = []
     characters = set()
     max_len = 0
-    for label in validation_ds:
-        label = label.split(" ")[-1].strip()
-    for char in label:
-        characters.add(char)
-    max_len = max(max_len, len(label))
-    characters = sorted(list(characters))
 
-    return characters, max_len
+    for label in labels:
+        label = label.split(" ")[-1].strip()
+        for char in label:
+            characters.add(char)
+
+        max_len = max(max_len, len(label))
+        clean_labels.append(label)
+
+    model_properties.get_constants(max_len, characters)
+
+    return clean_labels
 
 
 def cleaning_labels(labels):
@@ -138,3 +140,43 @@ def distortion_free_resize(image, img_size):
     image = tensorflow.transpose(image, perm=[1, 0, 2])
     image = tensorflow.image.flip_left_right(image)
     return image
+
+
+def preprocess_image(image_path, img_size=(128, 32)):
+    image = tensorflow.io.read_file(image_path)
+    image = tensorflow.image.decode_png(image, 1)
+    image = distortion_free_resize(image, img_size)
+    image = tensorflow.cast(image, tensorflow.float32) / 255.0
+    return image
+
+
+def vectorize_label(label):
+    padding_token = 99
+    characters = model_properties.characters
+    max_len = model_properties.max_len
+
+    char_to_num = StringLookup(
+        vocabulary=list(model_properties.characters), mask_token=None
+    )
+    label = char_to_num(tensorflow.strings.unicode_split(label, input_encoding="UTF-8"))
+    length = tensorflow.shape(label)[0]
+    pad_amount = model_properties.max_len - length
+    label = tensorflow.pad(
+        label, paddings=[[0, pad_amount]], constant_values=padding_token
+    )
+    return label
+
+
+def process_images_labels(image_path, label):
+    image = preprocess_image(image_path)
+    label = vectorize_label(label)
+    return {"image": image, "label": label}
+
+
+def prepare_dataset(image_paths, labels):
+    batch_size = 64
+    AUTOTUNE = tensorflow.data.AUTOTUNE
+    dataset = tensorflow.data.Dataset.from_tensor_slices((image_paths, labels)).map(
+        process_images_labels, num_parallel_calls=AUTOTUNE
+    )
+    return dataset.batch(batch_size).cache().prefetch(AUTOTUNE)

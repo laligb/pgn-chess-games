@@ -3,8 +3,6 @@ import os
 import tensorflow
 from tensorflow import keras
 
-# from google.cloud import storage
-
 
 class CTCLayer(keras.layers.Layer):
     def __init__(self, name=None):
