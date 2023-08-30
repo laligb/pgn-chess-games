@@ -88,10 +88,9 @@ def main():
 
 
 def prediction(images):
-    ## Prepare the images into dataset
-    paths, labels = get_image_paths_and_labels(images)
-    labels_cleaned = cleaning_labels(labels)
-    images_ds = prepare_dataset(paths, labels_cleaned)
+    img_array = img_base64_to_num(images)
+    img_boxes = preproc_image(img_array)
+    images_ds = tensorflow.data.Dataset.from_tensor_slices(img_boxes)
 
     model = load_model()
     preds = model.predict(images_ds)
