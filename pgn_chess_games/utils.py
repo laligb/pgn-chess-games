@@ -11,7 +11,7 @@ from skimage.color import label2rgb
 import base64
 
 
-def img_base64_to_num(base64_img: str) -> int:
+def img_bytes_to_num(img: bytes) -> int:
     """Transform image in bytes to numpy array.
 
     Args:
@@ -20,8 +20,8 @@ def img_base64_to_num(base64_img: str) -> int:
     Returns:
         int: 2D Numpy array.
     """
-    decoded_img = base64.b64decode(base64_img)
-    bytes_img = io.BytesIO(decoded_img)
+    # decoded_img = base64.b64decode(base64_img)
+    bytes_img = io.BytesIO(img)
     pill_img = Image.open(bytes_img)
     grayscale_img = ImageOps.grayscale(pill_img)
     nparray_img = np.array(grayscale_img)

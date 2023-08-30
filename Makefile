@@ -7,3 +7,9 @@ run_api:
 
 run_docker:
 	@docker run -p 8080:8000 chess
+
+run_model:
+	python -c 'from pgn_chess_games.model.main import main; main()'
+
+predict_sample:
+	python -c 'from pgn_chess_games.model.main import predict; predict(s)'
