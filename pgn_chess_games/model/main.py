@@ -88,12 +88,12 @@ def main():
 
 
 # TODO align preprocessing with API
-# def prediction(images):
-#     img_array = img_base64_to_num(images)
-#     img_boxes = preproc_image(img_array)
-#     images_ds = tensorflow.data.Dataset.from_tensor_slices(img_boxes)
+def prediction(images):
+    img_array = img_base64_to_num(images)
+    img_boxes = preproc_image(img_array)
+    images_ds = tensorflow.data.Dataset.from_tensor_slices(img_boxes)
 
-#     model = load_model()
-#     preds = model.predict(images_ds)
-#     pred_texts = decode_batch_predictions(preds)
-#     return pred_texts
+    model = load_model()
+    preds = model.predict(images_ds)
+    pred_texts = decode_batch_predictions(preds)
+    return pred_texts
