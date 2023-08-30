@@ -16,7 +16,6 @@ from pgn_chess_games.model.data import (
 )
 from pgn_chess_games.model.model import (
     initialize_model,
-    initialize_pred_model,
     decode_batch_predictions,
 )
 from pgn_chess_games.model.callback import EditDistanceCallback
@@ -69,7 +68,9 @@ def main():
 
     print(f"⏳ Initializing model")
     model = initialize_model(img_size)
-    prediction_model = initialize_pred_model(model)
+    prediction_model = tensorflow.keras.models.Model(
+        model.get_layer(name="image").input, model.get_layer(name="dense2").output
+    )
     edit_distance_callback = EditDistanceCallback(prediction_model, validation_ds)
     print(f"✅ Model initialized")
 
