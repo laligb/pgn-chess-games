@@ -8,6 +8,7 @@ import tensorflow
 from tensorflow.keras.layers import StringLookup
 from tensorflow import keras
 from pgn_chess_games.model.properties import model_properties
+import json
 
 ## Local data path where dataset is stored
 LOCAL_DATA_PATH = os.path.join(os.environ["LOCAL_DATA_PATH"], "words")
@@ -91,6 +92,14 @@ def get_constants(labels):
         clean_labels.append(label)
 
     model_properties.get_constants(max_len, characters)
+
+    properties_dictionary = {
+        "max_len": model_properties.max_len,
+        "characters": list(model_properties.characters),
+    }
+
+    with open("model_properties.json", "w") as fp:
+        json.dump(properties_dictionary, fp)
 
     return clean_labels
 
@@ -178,5 +187,19 @@ def prepare_dataset(image_paths, labels):
     AUTOTUNE = tensorflow.data.AUTOTUNE
     dataset = tensorflow.data.Dataset.from_tensor_slices((image_paths, labels)).map(
         process_images_labels, num_parallel_calls=AUTOTUNE
+    )
+    return dataset.batch(batch_size).cache().prefetch(AUTOTUNE)
+
+
+def process_prediction_images(image_path):
+    image = preprocess_image(image_path)
+    return {"image": image}
+
+
+def prepare_prediction_dataset(image_paths):
+    batch_size = 64
+    AUTOTUNE = tensorflow.data.AUTOTUNE
+    dataset = tensorflow.data.Dataset.from_tensor_slices((image_paths)).map(
+        process_prediction_images, num_parallel_calls=AUTOTUNE
     )
     return dataset.batch(batch_size).cache().prefetch(AUTOTUNE)
