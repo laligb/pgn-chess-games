@@ -47,7 +47,7 @@ async def receive_image(img: UploadFile = File(...)) -> str:
             "black": ["move 1","move 2","move 3"]
         }
     """
-    bytes_image = img
+    bytes_image = await img.read()
 
     # Translate img in base64 to 2D numpy array
     num_img = img_bytes_to_num(bytes_image)
