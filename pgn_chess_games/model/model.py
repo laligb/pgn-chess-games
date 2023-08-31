@@ -82,7 +82,11 @@ def initialize_model(img_size):
     opt = keras.optimizers.Adam()
     # Compile the model and return.
     model.compile(optimizer=opt)
-    return model
+
+    prediction_model = keras.models.Model(
+        model.get_layer(name="image").input, model.get_layer(name="dense2").output
+    )
+    return model, prediction_model
 
 
 def decode_batch_predictions(pred):

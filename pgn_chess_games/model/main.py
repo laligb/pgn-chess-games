@@ -13,6 +13,7 @@ from pgn_chess_games.model.data import (
     get_constants,
     cleaning_labels,
     prepare_dataset,
+    prepare_prediction_dataset,
 )
 from pgn_chess_games.model.model import (
     initialize_model,
@@ -20,7 +21,7 @@ from pgn_chess_games.model.model import (
 )
 from pgn_chess_games.model.callback import EditDistanceCallback
 from pgn_chess_games.model.properties import model_properties
-from pgn_chess_games.model.registry import save_model, load_model
+from pgn_chess_games.model.registry import save_model, load_interpreter
 from pgn_chess_games.utils import img_base64_to_num, preproc_image
 
 LOCAL_DATA_PATH = os.path.join(os.environ["LOCAL_DATA_PATH"], "words")
@@ -67,15 +68,12 @@ def main():
     validation_ds = prepare_dataset(validation_img_paths, val_labels_clean)
 
     print(f"⏳ Initializing model")
-    model = initialize_model(img_size)
-    prediction_model = tensorflow.keras.models.Model(
-        model.get_layer(name="image").input, model.get_layer(name="dense2").output
-    )
+    model, prediction_model = initialize_model(img_size)
     edit_distance_callback = EditDistanceCallback(prediction_model, validation_ds)
     print(f"✅ Model initialized")
 
     # Train the model.
-    epochs = 50
+    epochs = 1
     print(f"⏳ Training model with {epochs} epochs")
 
     history = model.fit(
@@ -85,16 +83,45 @@ def main():
         callbacks=[edit_distance_callback],
     )
 
-    save_model(model=model)
+    save_model(prediction_model)
 
 
 # TODO align preprocessing with API
-def prediction(images):
-    img_array = img_base64_to_num(images)
-    img_boxes = preproc_image(img_array)
-    images_ds = tensorflow.data.Dataset.from_tensor_slices(img_boxes)
+def prediction():
+    image_path = "/root/code/laligb/pgn-chess-games/data/prediction/015_0.png"
+    # 1. Read image
+    img = tensorflow.io.read_file(image_path)
+    # 2. Decode and convert to grayscale
+    img = tensorflow.io.decode_png(img, channels=1)
+    # 3. Convert to float32 in [0, 1] range
+    img = tensorflow.image.convert_image_dtype(img, tensorflow.float32)
+    # 4. Resize to the desired size
+    # img = tensorflow.image.resize(img, [img_height, img_width])
+    # 5. Transpose the image because we want the time
+    # dimension to correspond to the width of the image.
+    img = tensorflow.transpose(img, perm=[1, 0, 2])
 
-    model = load_model()
-    preds = model.predict(images_ds)
+    interpreter = tensorflow.lite.Interpreter(
+        "/root/.data/models/20230830-180020.tflite"
+    )
+    input_details = interpreter.get_input_details()
+    output_details = interpreter.get_output_details()
+
+    # Test the model on random input data.
+    input_shape = input_details[0]["shape"]
+    input_data = np.expand_dims(img, 0)
+    # input_data = np.array(np.random.random_sample(input_shape), dtype=np.float32)
+    interpreter.set_tensor(input_details[0]["index"], input_data)
+
+    interpreter.invoke()
+
+    # The function `get_tensor()` returns a copy of the tensor data.
+    # Use `tensor()` in order to get a pointer to the tensor.
+    preds = interpreter.get_tensor(output_details[0]["index"])
+
     pred_texts = decode_batch_predictions(preds)
     return pred_texts
+
+
+if __name__ == "__main__":
+    prediction()
