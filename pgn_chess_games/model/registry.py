@@ -44,22 +44,22 @@ def load_interpreter():
     BUCKET_NAME = os.environ.get("BUCKET_NAME")
     LOCAL_DATA_PATH = os.environ.get("LOCAL_DATA_PATH")
     client = storage.Client()
-    breakpoint()
 
     blobs = list(client.get_bucket(BUCKET_NAME).list_blobs(prefix="models"))
-
     try:
         latest_blob = max(blobs, key=lambda x: x.updated)
         latest_model_path_to_save = os.path.join(LOCAL_DATA_PATH, latest_blob.name)
         latest_blob.download_to_filename(latest_model_path_to_save)
 
-        interpreter = tensorflow.lite.Interpreter(latest_blob)
-        interpreter.allocate_tensors()
+        interpreter = tensorflow.lite.Interpreter(latest_model_path_to_save)
 
         print("✅ Latest model downloaded from cloud storage")
-
         return interpreter
     except:
         print(f"\n❌ No model found in GCS bucket {BUCKET_NAME}")
 
         return None
+
+
+if __name__ == "__main__":
+    load_interpreter()

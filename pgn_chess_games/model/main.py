@@ -14,6 +14,7 @@ from pgn_chess_games.model.data import (
     cleaning_labels,
     prepare_dataset,
     prepare_prediction_dataset,
+    preproc_predictions,
 )
 from pgn_chess_games.model.model import (
     initialize_model,
@@ -22,7 +23,7 @@ from pgn_chess_games.model.model import (
 from pgn_chess_games.model.callback import EditDistanceCallback
 from pgn_chess_games.model.properties import model_properties
 from pgn_chess_games.model.registry import save_model, load_interpreter
-from pgn_chess_games.utils import img_base64_to_num, preproc_image
+from pgn_chess_games.utils import img_bytes_to_num, preproc_image
 
 LOCAL_DATA_PATH = os.path.join(os.environ["LOCAL_DATA_PATH"], "words")
 
@@ -88,6 +89,7 @@ def main():
 
 def get_predictions(input_batch):
     interpreter = load_interpreter()
+    interpreter.allocate_tensors()
 
     # Get input and output tensors.
     input_details = interpreter.get_input_details()
@@ -112,12 +114,17 @@ def get_predictions(input_batch):
     return predictions
 
 
-# TODO align preprocessing with API
-def get_predictions_decoded(image):
-    # TODO: convert image to tensorflow dataset
-    batch = image
+def get_predictions_decoded(batch):
+    reshaped_arrays = []
+    for i in range(len(batch)):
+        tmp_array = None
+        tmp_array = np.expand_dims(batch[i], axis=-1)
+        new_array = preproc_predictions(tmp_array)
+        new_array = new_array / 255.0
+    reshaped_arrays.append(new_array)
 
-    batch_images = batch["image"].numpy()
+    batch_images = np.array(reshaped_arrays)
+
     input_batch = batch_images
     predictions = get_predictions(input_batch)
     pred_texts = decode_batch_predictions(predictions)
