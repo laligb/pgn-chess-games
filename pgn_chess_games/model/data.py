@@ -17,7 +17,7 @@ LOCAL_DATA_PATH = os.path.join(os.environ["LOCAL_DATA_PATH"], "words")
 def define_data(path):
     ## Defining the shuffled dataset
     words_list = []
-    words = open(f"{LOCAL_DATA_PATH}/words.txt", "r").readlines()
+    words = open(os.path.join(LOCAL_DATA_PATH,"words.txt"), "r").readlines()
     for line in words:
         if line[0] == "#":
             continue

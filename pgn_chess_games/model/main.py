@@ -22,7 +22,6 @@ from pgn_chess_games.model.model import (
 from pgn_chess_games.model.callback import EditDistanceCallback
 from pgn_chess_games.model.properties import model_properties
 from pgn_chess_games.model.registry import save_model, load_interpreter
-from pgn_chess_games.utils import img_base64_to_num, preproc_image
 
 LOCAL_DATA_PATH = os.path.join(os.environ["LOCAL_DATA_PATH"], "words")
 
