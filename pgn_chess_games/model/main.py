@@ -22,9 +22,15 @@ from pgn_chess_games.model.model import (
 )
 from pgn_chess_games.model.callback import EditDistanceCallback
 from pgn_chess_games.model.properties import model_properties
-from pgn_chess_games.model.registry import save_model, load_interpreter
+from pgn_chess_games.model.registry import (
+    save_model,
+    load_interpreter,
+    save_num_char_dict,
+)
 
 LOCAL_DATA_PATH = os.path.join(os.environ["LOCAL_DATA_PATH"], "words")
+
+epochs = 50
 
 
 def main():
@@ -52,13 +58,15 @@ def main():
 
     AUTOTUNE = tensorflow.data.AUTOTUNE
 
+    save_num_char_dict(model_properties.characters)
+
     # Mapping characters to integers.
-    char_to_num = StringLookup(
-        vocabulary=list(model_properties.characters), mask_token=None
+    char_to_num = tensorflow.keras.layers.experimental.preprocessing.StringLookup(
+        vocabulary=list(model_properties.characters), num_oov_indices=0, mask_token=None
     )
 
     # Mapping integers back to original characters.
-    num_to_char = StringLookup(
+    num_to_char = tensorflow.keras.layers.experimental.preprocessing.StringLookup(
         vocabulary=char_to_num.get_vocabulary(), mask_token=None, invert=True
     )
 
@@ -73,7 +81,6 @@ def main():
     print(f"✅ Model initialized")
 
     # Train the model.
-    epochs = 1
     print(f"⏳ Training model with {epochs} epochs")
 
     history = model.fit(
