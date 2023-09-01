@@ -1,7 +1,7 @@
 FROM python:3.10.6-buster
 RUN mkdir gcp
 COPY gcp/pgn-chess-games-b15121f9865c.json gcp/pgn-chess-games-b15121f9865c.json
-COPY requirements.txt requirements.txt
+COPY requirements-api.txt requirements.txt
 RUN pip install --upgrade pip
 RUN apt-get update
 COPY pgn_chess_games pgn_chess_games

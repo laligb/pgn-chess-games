@@ -1,7 +1,7 @@
 FROM tensorflow/tensorflow:latest-gpu
 RUN mkdir gcp
 COPY gcp/pgn-chess-games-b15121f9865c.json gcp/pgn-chess-games-b15121f9865c.json
-COPY requirements.txt requirements.txt
+COPY requirements-train.txt requirements.txt
 RUN pip install --upgrade pip
 RUN apt-get update
 RUN apt-get install \
