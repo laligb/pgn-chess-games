@@ -95,10 +95,11 @@ def decode_batch_predictions(pred):
     results = tensorflow.keras.backend.ctc_decode(
         pred, input_length=input_len, greedy=True
     )[0][0][:, :21]
+    LOCAL_DATA_PATH = os.environ.get("LOCAL_DATA_PATH")
+    file = "model_properties.json"
+    dictionary_path = os.path.join(LOCAL_DATA_PATH, "dictionary", file)
 
-    with open(
-        os.path.join("/root", "pgn-chess-games", "model_properties.json")
-    ) as json_file:
+    with open(dictionary_path) as json_file:
         model_properties = json.load(json_file)
 
     # Iterate over the results and get back the text.
