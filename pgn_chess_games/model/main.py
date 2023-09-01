@@ -86,42 +86,40 @@ def main():
     save_model(prediction_model)
 
 
-# TODO align preprocessing with API
-def prediction():
-    image_path = "/root/code/laligb/pgn-chess-games/data/prediction/015_0.png"
-    # 1. Read image
-    img = tensorflow.io.read_file(image_path)
-    # 2. Decode and convert to grayscale
-    img = tensorflow.io.decode_png(img, channels=1)
-    # 3. Convert to float32 in [0, 1] range
-    img = tensorflow.image.convert_image_dtype(img, tensorflow.float32)
-    # 4. Resize to the desired size
-    # img = tensorflow.image.resize(img, [img_height, img_width])
-    # 5. Transpose the image because we want the time
-    # dimension to correspond to the width of the image.
-    img = tensorflow.transpose(img, perm=[1, 0, 2])
+def get_predictions(input_batch):
+    interpreter = load_interpreter()
 
-    interpreter = tensorflow.lite.Interpreter(
-        "/root/.data/models/20230830-180020.tflite"
-    )
+    # Get input and output tensors.
     input_details = interpreter.get_input_details()
     output_details = interpreter.get_output_details()
 
-    # Test the model on random input data.
-    input_shape = input_details[0]["shape"]
-    input_data = np.expand_dims(img, 0)
-    # input_data = np.array(np.random.random_sample(input_shape), dtype=np.float32)
-    interpreter.set_tensor(input_details[0]["index"], input_data)
+    # Ensure the input_batch has the correct shape
+    if input_batch.shape[1:] != tuple(input_details[0]["shape"][1:]):
+        raise ValueError(
+            f"Input batch has shape {input_batch.shape[1:]} but model expects {input_details[0]['shape'][1:]}"
+        )
 
-    interpreter.invoke()
+    # Set the input tensor, invoke the interpreter, and get the output tensor for each image in the batch
+    predictions = []
+    for i in range(input_batch.shape[0]):
+        input_data = np.expand_dims(input_batch[i], axis=0)
+        interpreter.set_tensor(input_details[0]["index"], input_data)
+        interpreter.invoke()
+        output_data = interpreter.get_tensor(output_details[0]["index"])
+        predictions.append(output_data)
+    predictions = np.vstack(predictions)
 
-    # The function `get_tensor()` returns a copy of the tensor data.
-    # Use `tensor()` in order to get a pointer to the tensor.
-    preds = interpreter.get_tensor(output_details[0]["index"])
+    return predictions
 
-    pred_texts = decode_batch_predictions(preds)
+
+# TODO align preprocessing with API
+def get_predictions_decoded(image):
+    # TODO: convert image to tensorflow dataset
+    batch = image
+
+    batch_images = batch["image"].numpy()
+    input_batch = batch_images
+    predictions = get_predictions(input_batch)
+    pred_texts = decode_batch_predictions(predictions)
+
     return pred_texts
-
-
-if __name__ == "__main__":
-    prediction()

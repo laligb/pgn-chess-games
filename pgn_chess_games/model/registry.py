@@ -5,10 +5,21 @@ from tensorflow import keras
 import tensorflow
 
 
+def convert_tflite(prediction_model, path):
+    converter = tensorflow.lite.TFLiteConverter.from_keras_model(prediction_model)
+    converter.optimizations = [tensorflow.lite.Optimize.DEFAULT]
+    converter.target_spec.supported_ops = [
+        tensorflow.lite.OpsSet.TFLITE_BUILTINS,  # enable TensorFlow Lite ops.
+        tensorflow.lite.OpsSet.SELECT_TF_OPS,  # enable TensorFlow ops.
+    ]
+    tf_lite_model = converter.convert()
+    open(path, "wb").write(tf_lite_model)
+
+
 def save_model(prediction_model) -> None:
     BUCKET_NAME = os.environ.get("BUCKET_NAME")
     LOCAL_DATA_PATH = os.environ.get("LOCAL_DATA_PATH")
-    timestamp = time.strftime("%Y%m%d-%H%M%S")
+    timestamp = time.strftime("%Y%m%d-%H%M")
 
     # Save model locally
     model_path = os.path.join(LOCAL_DATA_PATH, "models", f"{timestamp}.tflite")
@@ -52,14 +63,3 @@ def load_interpreter():
         print(f"\n❌ No model found in GCS bucket {BUCKET_NAME}")
 
         return None
-
-
-def convert_tflite(prediction_model, path):
-    converter = tensorflow.lite.TFLiteConverter.from_keras_model(prediction_model)
-    converter.optimizations = [tensorflow.lite.Optimize.DEFAULT]
-    converter.target_spec.supported_ops = [
-        tensorflow.lite.OpsSet.TFLITE_BUILTINS,  # enable TensorFlow Lite ops.
-        tensorflow.lite.OpsSet.SELECT_TF_OPS,  # enable TensorFlow ops.
-    ]
-    tf_lite_model = converter.convert()
-    open(path, "wb").write(tf_lite_model)

@@ -20,4 +20,4 @@ download_datasets:
 	mkdir ~/.data
 	mkdir ~/.data/words
 	tar -xf IAM_Words/words.tgz -C ~/.data/words
-	mv IAM_Words/words.txt ~/.data
+	mv IAM_Words/words.txt ~/.data/words
