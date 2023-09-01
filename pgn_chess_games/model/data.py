@@ -203,3 +203,41 @@ def prepare_prediction_dataset(image_paths):
         process_prediction_images, num_parallel_calls=AUTOTUNE
     )
     return dataset.batch(batch_size).cache().prefetch(AUTOTUNE)
+
+
+def preproc_predictions(image):
+    img_size = (128, 32)
+    w, h = img_size
+    image = tensorflow.image.resize(image, size=(h, w), preserve_aspect_ratio=True)
+
+    # Check tha amount of padding needed to be done.
+    pad_height = h - tensorflow.shape(image)[0]
+    pad_width = w - tensorflow.shape(image)[1]
+
+    # Only necessary if you want to do same amount of padding on both sides.
+    if pad_height % 2 != 0:
+        height = pad_height // 2
+        pad_height_top = height + 1
+        pad_height_bottom = height
+    else:
+        pad_height_top = pad_height_bottom = pad_height // 2
+
+    if pad_width % 2 != 0:
+        width = pad_width // 2
+        pad_width_left = width + 1
+        pad_width_right = width
+    else:
+        pad_width_left = pad_width_right = pad_width // 2
+
+    image = tensorflow.pad(
+        image,
+        paddings=[
+            [pad_height_top, pad_height_bottom],
+            [pad_width_left, pad_width_right],
+            [0, 0],
+        ],
+    )
+
+    image = tensorflow.transpose(image, perm=[1, 0, 2])
+    image = tensorflow.image.flip_left_right(image)
+    return image
