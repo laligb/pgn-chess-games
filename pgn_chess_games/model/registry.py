@@ -3,6 +3,7 @@ import time
 from google.cloud import storage
 from tensorflow import keras
 import tensorflow
+import json
 
 
 def convert_tflite(prediction_model, path):
@@ -61,5 +62,16 @@ def load_interpreter():
         return None
 
 
-if __name__ == "__main__":
-    load_interpreter()
+def save_num_char_dict(characters):
+    char_to_num_dict = dict()
+    i = 0
+    for char in characters:
+        char_to_num_dict[char] = i
+        i += 1
+    num_to_char_dict = {value: key for key, value in char_to_num_dict.items()}
+
+    with open("num_to_char.json", "w") as fp:
+        json.dump(num_to_char_dict, fp)
+
+    with open("char_to_num.json", "w") as fp:
+        json.dump(char_to_num_dict, fp)
