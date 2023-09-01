@@ -98,10 +98,7 @@ def get_constants(labels):
         "characters": list(model_properties.characters),
     }
 
-    with open("model_properties.json", "w") as fp:
-        json.dump(properties_dictionary, fp)
-
-    return clean_labels
+    return clean_labels, properties_dictionary
 
 
 def cleaning_labels(labels):

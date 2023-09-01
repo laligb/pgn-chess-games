@@ -25,10 +25,11 @@ from pgn_chess_games.model.properties import model_properties
 from pgn_chess_games.model.registry import (
     save_model,
     load_interpreter,
+    save_dictionary,
     save_num_char_dict,
 )
 
-LOCAL_DATA_PATH = os.path.join(os.environ["LOCAL_DATA_PATH"], "words")
+LOCAL_DATA_PATH = os.path.join(os.environ["LOCAL_DATA_PATH"])
 
 epochs = 50
 
@@ -37,9 +38,9 @@ def main():
     ## Define the data with shuffle function
     np.random.seed(42)
     tensorflow.random.set_seed(42)
-    LOCAL_DATA_PATH = os.path.join(os.environ["LOCAL_DATA_PATH"], "words")
+    words_path = os.path.join(LOCAL_DATA_PATH, "words")
 
-    words_list = define_data(LOCAL_DATA_PATH)
+    words_list = define_data(words_path)
     print(f"✅ Shuffled data created withs size: {len(words_list)}")
 
     ## Split the data into train, validation and test
@@ -53,12 +54,12 @@ def main():
     validation_img_paths, validation_labels = get_image_paths_and_labels(data_val)
 
     ## Clean the test and validation labels
-    train_labels_clean = get_constants(train_labels)
+    train_labels_clean, model_properties_dict = get_constants(train_labels)
     val_labels_clean = cleaning_labels(validation_labels)
 
     AUTOTUNE = tensorflow.data.AUTOTUNE
 
-    save_num_char_dict(model_properties.characters)
+    save_dictionary(model_properties_dict, "model_properties")
 
     # Mapping characters to integers.
     char_to_num = tensorflow.keras.layers.experimental.preprocessing.StringLookup(
@@ -69,6 +70,11 @@ def main():
     num_to_char = tensorflow.keras.layers.experimental.preprocessing.StringLookup(
         vocabulary=char_to_num.get_vocabulary(), mask_token=None, invert=True
     )
+
+    num_to_char_dict, char_to_num_dict = save_num_char_dict(model_properties.characters)
+
+    save_dictionary(num_to_char_dict, "num_to_char_dict")
+    save_dictionary(char_to_num_dict, "char_to_num_dict")
 
     img_size = (128, 32)
 

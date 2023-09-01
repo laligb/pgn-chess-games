@@ -70,8 +70,30 @@ def save_num_char_dict(characters):
         i += 1
     num_to_char_dict = {value: key for key, value in char_to_num_dict.items()}
 
-    with open("num_to_char.json", "w") as fp:
-        json.dump(num_to_char_dict, fp)
+    return num_to_char_dict, char_to_num_dict
 
-    with open("char_to_num.json", "w") as fp:
-        json.dump(char_to_num_dict, fp)
+
+# TODO: clean this up
+def save_dictionary(dictionary, name: str) -> None:
+    BUCKET_NAME = os.environ.get("BUCKET_NAME")
+    LOCAL_DATA_PATH = os.environ.get("LOCAL_DATA_PATH")
+
+    # Save dictionary locally as .json file
+    file = f"{name}.json"
+    dictionary_path = os.path.join(LOCAL_DATA_PATH, "dictionary", file)
+
+    with open(dictionary_path, "w") as fp:
+        json.dump(dictionary, fp)
+
+    print(f"✅ {name} dictionary saved locally")
+
+    # e.g. "20230208-161047.tflite" for instance
+
+    client = storage.Client()
+    bucket = client.bucket(BUCKET_NAME)
+    blob = bucket.blob(f"dictionary/{file}")
+    blob.upload_from_filename(dictionary_path)
+
+    print(f"✅ {name} dictionary saved to GCS")
+
+    return None
