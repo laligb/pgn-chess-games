@@ -1,4 +1,4 @@
-FROM python:3.10.6-buster
+FROM tensorflow/tensorflow
 COPY requirements.txt requirements.txt
 RUN pip install --upgrade pip
 COPY pgn_chess_games pgn_chess_games
