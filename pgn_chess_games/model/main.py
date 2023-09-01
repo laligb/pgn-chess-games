@@ -120,7 +120,7 @@ def get_predictions_decoded(batch):
         tmp_array = np.expand_dims(batch[i], axis=-1)
         new_array = preproc_predictions(tmp_array)
         new_array = new_array / 255.0
-    reshaped_arrays.append(new_array)
+        reshaped_arrays.append(new_array)
 
     batch_images = np.array(reshaped_arrays)
 
