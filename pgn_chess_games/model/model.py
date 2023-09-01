@@ -6,6 +6,7 @@ from tensorflow import keras
 from pgn_chess_games.model.properties import model_properties
 
 from tensorflow.keras.layers import StringLookup
+import json
 
 
 class CTCLayer(keras.layers.Layer):
@@ -95,9 +96,14 @@ def decode_batch_predictions(pred):
         pred, input_length=input_len, greedy=True
     )[0][0][:, :21]
 
+    with open(
+        os.path.join("/root", "pgn-chess-games", "model_properties.json")
+    ) as json_file:
+        model_properties = json.load(json_file)
+
     # Iterate over the results and get back the text.
     char_to_num = StringLookup(
-        vocabulary=list(model_properties.characters), mask_token=None
+        vocabulary=list(model_properties["characters"]), mask_token=None
     )
     num_to_char = StringLookup(
         vocabulary=char_to_num.get_vocabulary(), mask_token=None, invert=True
