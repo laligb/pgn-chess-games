@@ -207,13 +207,15 @@ def prepare_dataset(image_paths, labels, prediction=False):
     return dataset.batch(batch_size).prefetch(AUTOTUNE)
 
 
-predict_image_folder = os.listdir(PRED_PATH)
-predict_image_paths = [os.path.join(PRED_PATH, x) for x in predict_image_folder]
-predict_image_paths.sort(key=lambda x: int(re.findall(r"\d+", x)[0]))
+def create_predict_ds(path):
+    predict_image_folder = os.listdir(PRED_PATH)
+    predict_image_paths = [os.path.join(PRED_PATH, x) for x in predict_image_folder]
+    predict_image_paths.sort(key=lambda x: int(re.findall(r"\d+", x)[0]))
 
-pred_ds = prepare_dataset(
-    predict_image_paths, ["blank" for each in predict_image_paths]
-)
+    pred_ds = prepare_dataset(
+        predict_image_paths, ["blank" for each in predict_image_paths]
+    )
+    return pred_ds
 
 
 def decode_batch_predictions(pred):
@@ -238,10 +240,11 @@ def decode_batch_predictions(pred):
     return output_text
 
 
-for batch in pred_ds:
-    batch_images = batch["image"]
-    predictions = get_predictions(batch_images)
-    texts = decode_batch_predictions(predictions)
+def predict_batch(path):
+    pred_ds = create_predict_ds(path)
+    for batch in pred_ds:
+        batch_images = batch["image"]
+        predictions = get_predictions(batch_images)
+        texts = decode_batch_predictions(predictions)
     print(texts)
-    print(len(batch_images))
-    print(len(texts))
+    return texts
