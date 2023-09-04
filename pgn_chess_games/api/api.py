@@ -1,7 +1,7 @@
 from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pgn_chess_games.utils import *
-from pgn_chess_games.model.main import get_predictions_decoded
+from pgn_chess_games.model.main import predict
 from pgn_chess_games.api.box_extraction import box_extraction
 import os
 
@@ -61,6 +61,7 @@ async def receive_image(img: UploadFile = File(...)) -> str:
     box_extraction(file_path, cropped_dir_path)
 
     # Predict
+    list_moves = predict_batch()
 
     # Delete temporary images
     print(f"Deleting temporary scoresheet file.")
@@ -78,17 +79,15 @@ async def receive_image(img: UploadFile = File(...)) -> str:
     ####### OLD METHOD #########
     # Translate img in base64 to 2D numpy array
     # num_img = img_bytes_to_num(bytes_image)
-
     # Preprocess image to cut it into boxes
     # all_boxes = preproc_image(num_img)
-
     # Call the model
     # list_moves = get_predictions_decoded(all_boxes)
     ####### END OF OLD METHOD #######
 
-    json_moves = mockup_predict()
+    # json_moves = mockup_predict()
 
-    # json_moves = {"white": list_moves[0::2], "black": list_moves[1::2]}
+    json_moves = {"white": list_moves[0::2], "black": list_moves[1::2]}
 
     pgn_moves = json_to_pgn(json_moves)
 

@@ -13,4 +13,5 @@ COPY pgn_chess_games pgn_chess_games
 COPY setup.py setup.py
 COPY Makefile Makefile
 RUN make install_package
+RUN make prepare_dirs
 CMD uvicorn pgn_chess_games.api.api:app --host 0.0.0.0 --port $PORT
