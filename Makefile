@@ -15,7 +15,7 @@ predict_sample:
 	@python -c 'from pgn_chess_games.model.main import predict; predict(s)'
 
 run_model_chess:
-	@python -c 'from pgn_chess_games.model.main import train_chess; train_chess()'
+	@python -c 'from pgn_chess_games.model.main_chess import run_model_chess; run_model_chess()'
 
 download_datasets:
 	@wget -q https://github.com/sayakpaul/Handwriting-Recognizer-in-Keras/releases/download/v1.0.0/IAM_Words.zip

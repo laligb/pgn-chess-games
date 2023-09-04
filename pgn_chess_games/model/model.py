@@ -4,7 +4,7 @@ import numpy as np
 import tensorflow
 from tensorflow import keras
 from pgn_chess_games.model.properties import model_properties
-from pgn_chess_games.model.registry import load_characters
+from pgn_chess_games.model.registry import load_characters, load_interpreter
 
 from tensorflow.keras.layers import StringLookup
 import json
@@ -103,16 +103,16 @@ def decode_batch_predictions(pred):
     results = tensorflow.keras.backend.ctc_decode(
         pred, input_length=input_len, greedy=True
     )[0][0][:, :21]
-    LOCAL_DATA_PATH = os.environ.get("LOCAL_DATA_PATH")
-    file = "model_properties.json"
-    dictionary_path = os.path.join(LOCAL_DATA_PATH, "dictionary", file)
+    # LOCAL_DATA_PATH = os.environ.get("LOCAL_DATA_PATH")
+    # file = "model_properties.json"
+    # dictionary_path = os.path.join(LOCAL_DATA_PATH, "dictionary", file)
 
-    with open(dictionary_path) as json_file:
-        model_properties = json.load(json_file)
+    # with open(dictionary_path) as json_file:
+    #     model_properties = json.load(json_file)
 
     # Iterate over the results and get back the text.
     char_to_num = StringLookup(
-        vocabulary=list(model_properties["characters"]), mask_token=None
+        vocabulary=list(model_properties.characters), mask_token=None
     )
     num_to_char = StringLookup(
         vocabulary=char_to_num.get_vocabulary(), mask_token=None, invert=True
@@ -127,24 +127,28 @@ def decode_batch_predictions(pred):
     return output_text
 
 
-def decode_chess_batch_predictions(pred):
-    ## Load characters.txt from bucket and create a StringLookup object
-    characters = load_characters()
-    char_to_num = StringLookup(vocabulary=list(characters), mask_token=None)
-    num_to_char = StringLookup(
-        vocabulary=char_to_num.get_vocabulary(), mask_token=None, invert=True
-    )
+def get_predictions(input_batch):
+    interpreter = load_interpreter(chess=True)
+    interpreter.allocate_tensors()
 
-    input_len = np.ones(pred.shape[0]) * pred.shape[1]
-    results = tensorflow.keras.backend.ctc_decode(
-        pred, input_length=input_len, greedy=True
-    )[0][0][:, :21]
+    # Get input and output tensors.
+    input_details = interpreter.get_input_details()
+    output_details = interpreter.get_output_details()
 
-    output_text = []
-    for res in results:
-        res = tensorflow.gather(
-            res, tensorflow.where(tensorflow.math.not_equal(res, -1))
+    # Ensure the input_batch has the correct shape
+    if input_batch.shape[1:] != tuple(input_details[0]["shape"][1:]):
+        raise ValueError(
+            f"Input batch has shape {input_batch.shape[1:]} but model expects {input_details[0]['shape'][1:]}"
         )
-        res = tensorflow.strings.reduce_join(num_to_char(res)).numpy().decode("utf-8")
-        output_text.append(res)
-    return output_text
+
+    # Set the input tensor, invoke the interpreter, and get the output tensor for each image in the batch
+    predictions = []
+    for i in range(input_batch.shape[0]):
+        input_data = np.expand_dims(input_batch[i], axis=0)
+        interpreter.set_tensor(input_details[0]["index"], input_data)
+        interpreter.invoke()
+        output_data = interpreter.get_tensor(output_details[0]["index"])
+        predictions.append(output_data)
+    predictions = np.vstack(predictions)
+
+    return predictions
