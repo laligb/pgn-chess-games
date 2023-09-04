@@ -9,20 +9,20 @@ run_docker:
 	@docker run -p 8080:8000 chess
 
 run_model_IAM:
-	python -c 'from pgn_chess_games.model.main import main_IAM; main_IAM()'
+	@python -c 'from pgn_chess_games.model.main import main_IAM; main_IAM()'
 
 predict_sample:
-	python -c 'from pgn_chess_games.model.main import predict; predict(s)'
+	@python -c 'from pgn_chess_games.model.main import predict; predict(s)'
 
 run_model_chess:
-	python -c 'from pgn_chess_games.model.main import train_chess; train_chess()'
+	@python -c 'from pgn_chess_games.model.main import train_chess; train_chess()'
 
 download_datasets:
-	wget -q https://github.com/sayakpaul/Handwriting-Recognizer-in-Keras/releases/download/v1.0.0/IAM_Words.zip
-	unzip -qq IAM_Words.zip
+	@wget -q https://github.com/sayakpaul/Handwriting-Recognizer-in-Keras/releases/download/v1.0.0/IAM_Words.zip
+	@unzip -qq IAM_Words.zip
 
-	mkdir ~/.data
-	mkdir ~/.data/models
-	mkdir ~/.data/words
-	tar -xf IAM_Words/words.tgz -C ~/.data/words
-	mv IAM_Words/words.txt ~/.data/words
+	@mkdir ~/.data
+	@mkdir ~/.data/models
+	@mkdir ~/.data/words
+	@tar -xf IAM_Words/words.tgz -C ~/.data/words
+	@mv IAM_Words/words.txt ~/.data/words

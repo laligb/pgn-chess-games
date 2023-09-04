@@ -15,6 +15,7 @@ from pgn_chess_games.model.data import (
     prepare_dataset,
     prepare_prediction_dataset,
     preproc_predictions,
+    get_image_paths_and_labels_chess,
 )
 from pgn_chess_games.model.model import (
     initialize_model,
@@ -27,11 +28,14 @@ from pgn_chess_games.model.registry import (
     load_interpreter,
     save_dictionary,
     save_num_char_dict,
+    save_model_chess,
+    save_characters,
 )
 
 LOCAL_DATA_PATH = os.path.join(os.environ["LOCAL_DATA_PATH"])
 
 epochs = 50
+epochs_chess = 50
 
 
 def main_IAM():
@@ -148,7 +152,7 @@ def train_chess():
     np.random.seed(42)
     tensorflow.random.set_seed(42)
 
-    base_path = "/root/code/laligb/pgn-chess-games/data/extracted_move_boxes"
+    base_path = os.path.join(os.environ["LOCAL_DATA_PATH"], "extracted_move_boxes")
 
     train_words = open(f"{base_path}/train_data.txt", "r").readlines()
     train_samples = []
@@ -181,36 +185,20 @@ def train_chess():
 
     base_image_path = os.path.join(base_path)
 
-    train_img_paths, train_labels = get_image_paths_and_labels(train_samples)
-    validation_img_paths, validation_labels = get_image_paths_and_labels(
+    train_img_paths, train_labels = get_image_paths_and_labels_chess(train_samples)
+    validation_img_paths, validation_labels = get_image_paths_and_labels_chess(
         validation_samples
     )
-    test_img_paths, test_labels = get_image_paths_and_labels(test_samples)
+    test_img_paths, test_labels = get_image_paths_and_labels_chess(test_samples)
 
-    train_labels_cleaned = []
-    characters = set()
-    max_len = 0
-
-    for label in train_labels:
-        label = label.split(" ")[-1].strip()
-        for char in label:
-            characters.add(char)
-
-        max_len = max(max_len, len(label))
-        train_labels_cleaned.append(label)
-
-    characters = sorted(list(characters))
-
-    print("Maximum length: ", max_len)
-    print("Vocab size: ", len(characters))
-
+    train_labels_cleaned, model_properties_dict = get_constants(train_labels)
     validation_labels_cleaned = cleaning_labels(validation_labels)
     test_labels_cleaned = cleaning_labels(test_labels)
 
+    characters = model_properties_dict["characters"]
+
     AUTOTUNE = tensorflow.data.AUTOTUNE
-    with open("characters.txt", "w") as f:
-        for char in characters:
-            f.write("%s\n" % char)
+    save_characters(characters, "characters")
 
     # Mapping characters to integers.
     char_to_num = StringLookup(vocabulary=list(characters), mask_token=None)
@@ -231,13 +219,13 @@ def train_chess():
     print(f"✅ Model initialized")
 
     # Train the model.
-    print(f"⏳ Training model with {epochs} epochs")
+    print(f"⏳ Training model with {epochs_chess} epochs")
 
     history = model.fit(
         train_ds,
         validation_data=validation_ds,
-        epochs=epochs,
+        epochs=epochs_chess,
         callbacks=[edit_distance_callback],
     )
 
-    save_model(prediction_model)
+    save_model_chess(prediction_model)

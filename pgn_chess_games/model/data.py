@@ -68,6 +68,27 @@ def get_image_paths_and_labels(samples):
     return paths, corrected_samples
 
 
+def get_image_paths_and_labels_chess(samples):
+    CHESS_DATA_PATH = os.path.join(os.environ["CHESS_DATA_PATH"])
+    samples = [each.strip() for each in samples]
+    paths = []
+    corrected_samples = []
+    for i, file_line in enumerate(samples):
+        line_split = file_line.strip()
+        line_split = line_split.split(" ")
+
+        # Each line split will have this format for the corresponding image:
+        # part1/part1-part2/part1-part2-part3.png
+        image_name = line_split[0]
+
+        img_path = os.path.join(CHESS_DATA_PATH, image_name)
+        if os.path.getsize(img_path):
+            paths.append(img_path)
+            corrected_samples.append(file_line.split("\n")[0])
+
+    return paths, corrected_samples
+
+
 def get_data(words_list):
     """Return three datasets: train, validation and test in ratio of
     90:5:5 to be used for the model training"""
@@ -196,7 +217,7 @@ def process_prediction_images(image_path):
 
 
 def prepare_prediction_dataset(image_paths):
-    batch_size = 64
+    batch_size = 160
     AUTOTUNE = tensorflow.data.AUTOTUNE
     dataset = tensorflow.data.Dataset.from_tensor_slices((image_paths)).map(
         process_prediction_images, num_parallel_calls=AUTOTUNE
