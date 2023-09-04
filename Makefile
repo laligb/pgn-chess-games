@@ -5,9 +5,6 @@ install_package:
 run_api:
 	@uvicorn pgn_chess_games.api.api:app --reload
 
-run_docker:
-	@docker run -p 8080:8000 chess
-
 run_model_IAM:
 	@python -c 'from pgn_chess_games.model.main import main_IAM; main_IAM()'
 
@@ -51,3 +48,9 @@ run_docker_train:
 
 run_docker_api:
 	@docker run -e PORT=8000 -p 8080:8000 --env-file .env eu.gcr.io/pgn-chess-games/chess
+
+run_gcloud_api:
+	@gcloud run deploy --image eu.gcr.io/pgn-chess-games/chess --memory 2Gi --region europe-west1 --env-vars-file .env.yaml
+
+stop_gcloud_api:
+	@gcloud run services delete chess
