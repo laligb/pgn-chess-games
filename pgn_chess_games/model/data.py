@@ -111,7 +111,7 @@ def cleaning_labels(labels):
     return clean_labels
 
 
-def distortion_free_resize(image, img_size):
+def distortion_free_resize(image, img_size, prediction=False):
     w, h = img_size
     image = tensorflow.image.resize(image, size=(h, w), preserve_aspect_ratio=True)
 
@@ -143,15 +143,17 @@ def distortion_free_resize(image, img_size):
         ],
     )
 
-    image = tensorflow.transpose(image, perm=[1, 0, 2])
-    image = tensorflow.image.flip_left_right(image)
+    if not prediction:
+        image = tensorflow.transpose(image, perm=[1, 0, 2])
+
+        image = tensorflow.image.flip_left_right(image)
     return image
 
 
-def preprocess_image(image_path, img_size=(128, 32)):
+def preprocess_image(image_path, img_size=(128, 32), prediction=False):
     image = tensorflow.io.read_file(image_path)
     image = tensorflow.image.decode_png(image, 1)
-    image = distortion_free_resize(image, img_size)
+    image = distortion_free_resize(image, img_size, prediction)
     image = tensorflow.cast(image, tensorflow.float32) / 255.0
     return image
 
@@ -179,7 +181,7 @@ def process_images_labels(image_path, label):
     return {"image": image, "label": label}
 
 
-def prepare_dataset(image_paths, labels):
+def prepare_dataset(image_paths, labels, prediction=False):
     batch_size = 64
     AUTOTUNE = tensorflow.data.AUTOTUNE
     dataset = tensorflow.data.Dataset.from_tensor_slices((image_paths, labels)).map(

@@ -8,11 +8,17 @@ run_api:
 run_docker:
 	@docker run -p 8080:8000 chess
 
-run_model:
-	@python -c 'from pgn_chess_games.model.main import main; main()'
+run_model_IAM:
+	@python -c 'from pgn_chess_games.model.main import main_IAM; main_IAM()'
 
 predict_sample:
 	@python -c 'from pgn_chess_games.model.main import predict; predict(s)'
+
+run_model_chess:
+	python -c 'from pgn_chess_games.model.main import train_chess; train_chess()'
+
+run_model_chess:
+	python -c 'from pgn_chess_games.model.main import train_chess; train_chess()'
 
 download_datasets:
 	@wget -q https://github.com/sayakpaul/Handwriting-Recognizer-in-Keras/releases/download/v1.0.0/IAM_Words.zip

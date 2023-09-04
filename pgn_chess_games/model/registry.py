@@ -73,7 +73,6 @@ def save_num_char_dict(characters):
     return num_to_char_dict, char_to_num_dict
 
 
-# TODO: clean this up
 def save_dictionary(dictionary, name: str) -> None:
     BUCKET_NAME = os.environ.get("BUCKET_NAME")
     LOCAL_DATA_PATH = os.environ.get("LOCAL_DATA_PATH")

@@ -31,6 +31,13 @@ class CTCLayer(keras.layers.Layer):
         # At test time, just return the computed predictions.
         return y_pred
 
+    def get_config(self):
+        return {}
+
+    @classmethod
+    def from_config(cls, config):
+        return cls(**config)
+
 
 def initialize_model(img_size):
     img_width = img_size[0]
