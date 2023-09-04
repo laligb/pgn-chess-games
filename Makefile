@@ -20,6 +20,7 @@ download_datasets:
 	@mkdir ~/.data
 	@mkdir ~/.data/models
 	@mkdir ~/.data/words
+	@mkdir ~/.data/dictionary
 	@tar -xf IAM_Words/words.tgz -C ~/.data/words
 	@mv IAM_Words/words.txt ~/.data/words
 
