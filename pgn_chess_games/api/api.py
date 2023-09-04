@@ -1,8 +1,9 @@
 from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pgn_chess_games.utils import *
-from pgn_chess_games.model.registry import *
 from pgn_chess_games.model.main import get_predictions_decoded
+from pgn_chess_games.api.box_extraction import box_extraction
+import os
 
 app = FastAPI()
 # app.state.model = load_model() #There's no need to load the model
@@ -46,18 +47,48 @@ async def receive_image(img: UploadFile = File(...)) -> str:
     """
     bytes_image = await img.read()
 
+    # Save img locally
+    cwd = os.getcwd()
+    print(f"Current working directory: {cwd}")
+    LOCAL_DATA_PATH = os.environ.get("LOCAL_DATA_PATH")
+    file_path = os.path.join(LOCAL_DATA_PATH, "temp", "scoresheet.png")
+    cropped_dir_path = os.path.join(LOCAL_DATA_PATH, "temp", "crop/")
+
+    with open(file_path, "wb") as newfile:
+        newfile.write(bytes_image)
+
+    # Extract boxes and save them locally
+    box_extraction(file_path, cropped_dir_path)
+
+    # Predict
+
+    # Delete temporary images
+    print(f"Deleting temporary scoresheet file.")
+    if os.path.isfile(file_path):
+        os.remove(file_path)
+
+    print(f"Deleting temporary files from {cropped_dir_path} ...")
+    files = os.listdir(cropped_dir_path)
+    for file in files:
+        temp_filepath = os.path.join(cropped_dir_path, file)
+        if os.path.isfile(temp_filepath):
+            os.remove(temp_filepath)
+    print("✅ All temporary files deleted.")
+
+    ####### OLD METHOD #########
     # Translate img in base64 to 2D numpy array
-    num_img = img_bytes_to_num(bytes_image)
+    # num_img = img_bytes_to_num(bytes_image)
 
     # Preprocess image to cut it into boxes
-    all_boxes = preproc_image(num_img)
+    # all_boxes = preproc_image(num_img)
 
     # Call the model
-    list_moves = get_predictions_decoded(all_boxes)
+    # list_moves = get_predictions_decoded(all_boxes)
+    ####### END OF OLD METHOD #######
 
-    # json_moves = mockup_predict()
+    json_moves = mockup_predict()
 
-    json_moves = {"white": list_moves[0::2], "black": list_moves[1::2]}
+    # json_moves = {"white": list_moves[0::2], "black": list_moves[1::2]}
 
     pgn_moves = json_to_pgn(json_moves)
 

@@ -7,3 +7,8 @@
 notebooks/
 data/
 *.yaml
+gcp/
+data/
+images/
+IAM_Words/
+temp/

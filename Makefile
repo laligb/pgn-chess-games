@@ -17,18 +17,22 @@ predict_sample:
 run_model_chess:
 	@python -c 'from pgn_chess_games.model.main import train_chess; train_chess()'
 
-run_model_chess:
-	@python -c 'from pgn_chess_games.model.main import train_chess; train_chess()'
+prepare_dirs:
+	@[ -d ./data ] || mkdir -p ./data
+	@[ -d ./data/models ] || mkdir -p ./data/models
+	@[ -d ./data/words ] || mkdir -p ./data/words
+	@[ -d ./data/dictionary ] || mkdir -p ./data/dictionary
+	@[ -d ./data/temp ] || mkdir -p ./data/temp
+	@[ -d ./data/temp/crop ] || mkdir -p ./data/temp/crop
+	@[ -d ./data/characters ] || mkdir -p ./data/characters
+	@[ -d ./data/"extracted move boxes" ] || mkdir -p ./data/"extracted move boxes"
 
 download_datasets:
 	@wget -q https://github.com/sayakpaul/Handwriting-Recognizer-in-Keras/releases/download/v1.0.0/IAM_Words.zip
 	@unzip -qq IAM_Words.zip
-	@mkdir ~/.data
-	@mkdir ~/.data/models
-	@mkdir ~/.data/words
-	@mkdir ~/.data/dictionary
-	@tar -xf IAM_Words/words.tgz -C ~/.data/words
-	@mv IAM_Words/words.txt ~/.data/words
+	@make prepare_dirs
+	@tar -xf IAM_Words/words.tgz -C ./data/words
+	@mv IAM_Words/words.txt ./data/words
 
 build_docker_train:
 	@docker build -t davidrosillo/chess . -f train.Dockerfile
@@ -46,4 +50,4 @@ run_docker_train:
 	@docker run -it --rm --env-file .env --runtime=nvidia davidrosillo/chess
 
 run_docker_api:
-	@docker run -e PORT=8000 -p 8080:8000 eu.gcr.io/pgn-chess-games/chess
+	@docker run -e PORT=8000 -p 8080:8000 --env-file .env eu.gcr.io/pgn-chess-games/chess
