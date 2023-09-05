@@ -13,9 +13,7 @@ from pgn_chess_games.model.data import (
     get_constants,
     cleaning_labels,
     prepare_dataset,
-    prepare_prediction_dataset,
-    preproc_predictions,
-    get_image_paths_and_labels_chess,
+    get_image_paths_and_labels_IAM,
 )
 from pgn_chess_games.model.model import (
     initialize_model,
@@ -28,13 +26,11 @@ from pgn_chess_games.model.registry import (
     load_interpreter,
     save_dictionary,
     save_num_char_dict,
-    save_model_chess,
-    save_characters,
 )
 
 LOCAL_DATA_PATH = os.path.join(os.environ["LOCAL_DATA_PATH"])
 
-epochs = 50
+epochs = 1
 epochs_chess = 50
 
 
@@ -54,8 +50,8 @@ def main_IAM():
     print(f"Total test samples: {len(data_test)}")
 
     ## Get the image paths and samples
-    train_img_paths, train_labels = get_image_paths_and_labels(data_train)
-    validation_img_paths, validation_labels = get_image_paths_and_labels(data_val)
+    train_img_paths, train_labels = get_image_paths_and_labels_IAM(data_train)
+    validation_img_paths, validation_labels = get_image_paths_and_labels_IAM(data_val)
 
     ## Clean the test and validation labels
     train_labels_clean, model_properties_dict = get_constants(train_labels)
@@ -128,104 +124,3 @@ def get_predictions(input_batch):
     predictions = np.vstack(predictions)
 
     return predictions
-
-
-def get_predictions_decoded(batch):
-    reshaped_arrays = []
-    for i in range(len(batch)):
-        tmp_array = None
-        tmp_array = np.expand_dims(batch[i], axis=-1)
-        new_array = preproc_predictions(tmp_array)
-        new_array = new_array / 255.0
-        reshaped_arrays.append(new_array)
-
-    batch_images = np.array(reshaped_arrays)
-
-    input_batch = batch_images
-    predictions = get_predictions(input_batch)
-    pred_texts = decode_batch_predictions(predictions)
-
-    return pred_texts
-
-
-def train_chess():
-    np.random.seed(42)
-    tensorflow.random.set_seed(42)
-
-    base_path = os.path.join(os.environ["LOCAL_DATA_PATH"], "extracted_move_boxes")
-
-    train_words = open(f"{base_path}/train_data.txt", "r").readlines()
-    train_samples = []
-    for line in train_words:
-        if line[0] == "#":
-            continue
-        if line.split(" ")[1] != "err":  # We don't need to deal with errored entries.
-            train_samples.append(line.replace("\n", ""))
-
-    val_words = open(f"{base_path}/val_data.txt", "r").readlines()
-    validation_samples = []
-    for line in val_words:
-        if line[0] == "#":
-            continue
-        if line.split(" ")[1] != "err":  # We don't need to deal with errored entries.
-            validation_samples.append(line.replace("\n", ""))
-
-    test_words = open(f"{base_path}/testing_tags.txt", "r").readlines()
-    test_samples = []
-    for line in test_words:
-        if line[0] == "#":
-            continue
-        if line.split(" ")[1] != "err":  # We don't need to deal with errored entries.
-            test_samples.append(line.replace("\n", ""))
-    test_samples = validation_samples
-
-    print(f"Total training samples: {len(train_samples)}")
-    print(f"Total validation samples: {len(validation_samples)}")
-    print(f"Total test samples: {len(test_samples)}")
-
-    base_image_path = os.path.join(base_path)
-
-    train_img_paths, train_labels = get_image_paths_and_labels_chess(train_samples)
-    validation_img_paths, validation_labels = get_image_paths_and_labels_chess(
-        validation_samples
-    )
-    test_img_paths, test_labels = get_image_paths_and_labels_chess(test_samples)
-
-    train_labels_cleaned, model_properties_dict = get_constants(train_labels)
-    validation_labels_cleaned = cleaning_labels(validation_labels)
-    test_labels_cleaned = cleaning_labels(test_labels)
-
-    characters = model_properties_dict["characters"]
-
-    AUTOTUNE = tensorflow.data.AUTOTUNE
-    save_characters(characters, "characters")
-
-    # Mapping characters to integers.
-    char_to_num = StringLookup(vocabulary=list(characters), mask_token=None)
-
-    # Mapping integers back to original characters.
-    num_to_char = StringLookup(
-        vocabulary=char_to_num.get_vocabulary(), mask_token=None, invert=True
-    )
-
-    train_ds = prepare_dataset(train_img_paths, train_labels_cleaned)
-    validation_ds = prepare_dataset(validation_img_paths, validation_labels_cleaned)
-    test_ds = prepare_dataset(test_img_paths, test_labels_cleaned)
-
-    print(f"⏳ Initializing model")
-    img_size = (128, 32)
-    model, prediction_model = initialize_model(img_size)
-    edit_distance_callback = EditDistanceCallback(prediction_model, validation_ds)
-    print(f"✅ Model initialized")
-
-    # Train the model.
-    print(f"⏳ Training model with {epochs_chess} epochs")
-
-    history = model.fit(
-        train_ds,
-        validation_data=validation_ds,
-        epochs=epochs_chess,
-        callbacks=[edit_distance_callback],
-    )
-
-    save_model_chess(prediction_model)
