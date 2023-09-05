@@ -75,7 +75,6 @@ def run_model_chess():
     print(f"Total test samples: {len(test_samples)}")
 
     ## Get the image paths and samples
-    breakpoint()
     train_img_paths, train_labels = get_image_paths_and_labels(train_samples)
     validation_img_paths, validation_labels = get_image_paths_and_labels(
         validation_samples
