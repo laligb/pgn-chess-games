@@ -13,6 +13,6 @@ COPY pgn_chess_games pgn_chess_games
 COPY setup.py setup.py
 COPY Makefile Makefile
 RUN make prepare_dirs
-COPY data/datasets data/datasets
+COPY data/dataset data/dataset
 RUN make install_package
 CMD sh

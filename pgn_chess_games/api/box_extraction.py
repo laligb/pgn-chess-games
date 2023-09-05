@@ -21,14 +21,16 @@ def sort_contours(cnts, method="left-to-right"):
     # bottom
     boundingBoxes = [cv2.boundingRect(c) for c in cnts]
     (cnts, boundingBoxes) = zip(
-        *sorted(zip(cnts, boundingBoxes), key=lambda y: (y[1][i], y[i][0]), reverse=reverse)
+        *sorted(
+            zip(cnts, boundingBoxes), key=lambda y: (y[1][i], y[i][0]), reverse=reverse
+        )
     )
 
     # return the list of sorted contours and bounding boxes
     return (cnts, boundingBoxes)
 
 
-# Functon for extracting the box
+# Function for extracting the boxes
 def box_extraction(img_for_box_extraction_path, cropped_dir_path):
     print("Reading image...")
     img = cv2.imread(img_for_box_extraction_path, 0)  # Read the image
@@ -111,13 +113,19 @@ def box_extraction(img_for_box_extraction_path, cropped_dir_path):
             os.remove(filepath)
     print("✅ All temporary files deleted.")
 
+    return contours
+
 
 def save_sorted_boxes(file):
-    contours = box_extraction(file, "prediction/")
+    LOCAL_DATA_PATH = os.environ.get("LOCAL_DATA_PATH")
+    cropped_dir_path = os.path.join(LOCAL_DATA_PATH, "temp", "crop/")
+    final_dir_path = os.path.join(LOCAL_DATA_PATH, "temp", "neworder/")
+
+    contours = box_extraction(file, cropped_dir_path)
     boundingBoxes = [cv2.boundingRect(c) for c in contours]
     clean_boxes = []
     for each in boundingBoxes:
-        x, y, w, h  =each
+        x, y, w, h = each
 
         if (w > 80 and h > 20) and w > 3 * h:
             clean_boxes.append(each)
@@ -126,19 +134,18 @@ def save_sorted_boxes(file):
     left_boxes = []
     right_boxes = []
     for each in clean_boxes:
-        x, y, w, h  =each
+        x, y, w, h = each
 
         if x <= 500:
             left_boxes.append(each)
         elif x > 500:
             right_boxes.append(each)
 
-    cropped_dir_path='neworder/'
     merged_boxes = left_boxes + right_boxes
     for id, each in enumerate(merged_boxes):
         x, y, w, h = each
         new_img = img[y : y + h, x : x + w]
-        cv2.imwrite(cropped_dir_path + str(id) + ".png", new_img)
+        cv2.imwrite(final_dir_path + str(id) + ".png", new_img)
 
 
 if __name__ == "__main__":

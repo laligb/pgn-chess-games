@@ -60,6 +60,7 @@ def load_interpreter(chess=False):
     prefix = "models"
 
     blobs = list(client.get_bucket(BUCKET_NAME).list_blobs(prefix=prefix))
+
     try:
         latest_blob = max(blobs, key=lambda x: x.updated)
         latest_model_path_to_save = os.path.join(LOCAL_DATA_PATH, latest_blob.name)

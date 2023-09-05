@@ -12,11 +12,12 @@ predict_sample:
 	@python -c 'from pgn_chess_games.model.main import predict; predict(s)'
 
 run_model_chess:
-	@python -c 'from pgn_chess_games.model.main import train_chess; train_chess()'
+	@python -c 'from pgn_chess_games.model.main_chess import run_model_chess; run_model_chess()'
 
 prepare_dirs:
 	@[ -d ./data ] || mkdir -p ./data
 	@[ -d ./data/models ] || mkdir -p ./data/models
+	@[ -d ./data/models/chess ] || mkdir -p ./data/models/chess
 	@[ -d ./data/words ] || mkdir -p ./data/words
 	@[ -d ./data/dictionary ] || mkdir -p ./data/dictionary
 	@[ -d ./data/temp ] || mkdir -p ./data/temp
@@ -44,10 +45,10 @@ push_docker_api:
 	@docker push eu.gcr.io/pgn-chess-games/chess
 
 run_docker_train:
-	@docker run -it --rm --env-file .env --runtime=nvidia davidrosillo/chess
+	@docker run -d -it --rm --env-file .env --runtime=nvidia davidrosillo/chess
 
 run_docker_api:
-	@docker run -e PORT=8000 -p 8080:8000 --env-file .env eu.gcr.io/pgn-chess-games/chess
+	@docker run -d -e PORT=8000 -p 8080:8000 --env-file .env eu.gcr.io/pgn-chess-games/chess
 
 run_gcloud_api:
 	@gcloud run deploy --image eu.gcr.io/pgn-chess-games/chess --memory 2Gi --region europe-west1 --env-vars-file .env.yaml

@@ -142,11 +142,26 @@ def json_to_pgn(json_moves: dict) -> str:
 
     """
     total_moves = len(json_moves["white"]) + 1
+    legal_moves = []
+    with open("legal_moves.txt", "r") as txt_moves:
+        legal_moves = [txt_move.replace("\n", "") for txt_move in txt_moves]
+
+    legal_moves.append("O-O")
+    legal_moves.append("O-0-O")
+    print(legal_moves)
+
     pgn_moves = ""
 
     for move in range(1, total_moves):
-        pgn_moves += (
-            f"{str(move)}.{json_moves['white'][move-1]} {json_moves['black'][move-1]} "
-        )
+        if json_moves["white"][move - 1] in legal_moves:
+            pgn_moves += f"{str(move)}.{json_moves['white'][move-1]}"
+        else:
+            pgn_moves += f"{str(move)}.missed"
+
+        if move <= len(json_moves["black"]):
+            if json_moves["black"][move - 1] in legal_moves:
+                pgn_moves += f" {json_moves['black'][move-1]} "
+            else:
+                pgn_moves += " missed "
 
     return pgn_moves

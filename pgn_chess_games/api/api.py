@@ -1,8 +1,9 @@
 from fastapi import FastAPI, File, UploadFile
+from fastapi.responses import PlainTextResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pgn_chess_games.utils import *
 from pgn_chess_games.model.main_chess import predict_chess
-from pgn_chess_games.api.box_extraction import box_extraction
+from pgn_chess_games.api.box_extraction import save_sorted_boxes
 import os
 
 app = FastAPI()
@@ -32,7 +33,7 @@ def hello():
 
 # Endpoint where the images are posted
 @app.post("/upload")
-async def receive_image(img: UploadFile = File(...)) -> str:
+async def receive_image(img: UploadFile = File(...)):
     """
     Endpoint to process the images and send them to the model to get a
     prediction.
@@ -53,15 +54,16 @@ async def receive_image(img: UploadFile = File(...)) -> str:
     LOCAL_DATA_PATH = os.environ.get("LOCAL_DATA_PATH")
     file_path = os.path.join(LOCAL_DATA_PATH, "temp", "scoresheet.png")
     cropped_dir_path = os.path.join(LOCAL_DATA_PATH, "temp", "crop/")
+    newdir_dir_path = os.path.join(LOCAL_DATA_PATH, "temp", "neworder/")
 
     with open(file_path, "wb") as newfile:
         newfile.write(bytes_image)
 
     # Extract boxes and save them locally
-    box_extraction(file_path, cropped_dir_path)
+    save_sorted_boxes(file_path)
 
     # Predict
-    list_moves = predict_chess(cropped_dir_path)
+    list_moves = predict_chess(newdir_dir_path)
 
     # Delete temporary images
     print(f"Deleting temporary scoresheet file.")
@@ -72,6 +74,13 @@ async def receive_image(img: UploadFile = File(...)) -> str:
     files = os.listdir(cropped_dir_path)
     for file in files:
         temp_filepath = os.path.join(cropped_dir_path, file)
+        if os.path.isfile(temp_filepath):
+            os.remove(temp_filepath)
+
+    print(f"Deleting temporary files from {newdir_dir_path} ...")
+    files = os.listdir(newdir_dir_path)
+    for file in files:
+        temp_filepath = os.path.join(newdir_dir_path, file)
         if os.path.isfile(temp_filepath):
             os.remove(temp_filepath)
     print("✅ All temporary files deleted.")
@@ -91,4 +100,4 @@ async def receive_image(img: UploadFile = File(...)) -> str:
 
     pgn_moves = json_to_pgn(json_moves)
 
-    return pgn_moves
+    return PlainTextResponse(pgn_moves)
