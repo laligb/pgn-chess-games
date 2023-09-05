@@ -21,7 +21,7 @@ def sort_contours(cnts, method="left-to-right"):
     # bottom
     boundingBoxes = [cv2.boundingRect(c) for c in cnts]
     (cnts, boundingBoxes) = zip(
-        *sorted(zip(cnts, boundingBoxes), key=lambda b: b[1][i], reverse=reverse)
+        *sorted(zip(cnts, boundingBoxes), key=lambda y: (y[1][i], y[i][0]), reverse=reverse)
     )
 
     # return the list of sorted contours and bounding boxes
@@ -110,6 +110,35 @@ def box_extraction(img_for_box_extraction_path, cropped_dir_path):
         if os.path.isfile(filepath):
             os.remove(filepath)
     print("✅ All temporary files deleted.")
+
+
+def save_sorted_boxes(file):
+    contours = box_extraction(file, "prediction/")
+    boundingBoxes = [cv2.boundingRect(c) for c in contours]
+    clean_boxes = []
+    for each in boundingBoxes:
+        x, y, w, h  =each
+
+        if (w > 80 and h > 20) and w > 3 * h:
+            clean_boxes.append(each)
+
+    img = cv2.imread(file, 0)
+    left_boxes = []
+    right_boxes = []
+    for each in clean_boxes:
+        x, y, w, h  =each
+
+        if x <= 500:
+            left_boxes.append(each)
+        elif x > 500:
+            right_boxes.append(each)
+
+    cropped_dir_path='neworder/'
+    merged_boxes = left_boxes + right_boxes
+    for id, each in enumerate(merged_boxes):
+        x, y, w, h = each
+        new_img = img[y : y + h, x : x + w]
+        cv2.imwrite(cropped_dir_path + str(id) + ".png", new_img)
 
 
 if __name__ == "__main__":
