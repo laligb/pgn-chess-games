@@ -17,13 +17,19 @@ def convert_tflite(prediction_model, path):
     open(path, "wb").write(tf_lite_model)
 
 
-def save_model(prediction_model) -> None:
+def save_model(prediction_model, chess=False) -> None:
     BUCKET_NAME = os.environ.get("BUCKET_NAME")
     LOCAL_DATA_PATH = os.environ.get("LOCAL_DATA_PATH")
     timestamp = time.strftime("%Y%m%d-%H%M")
 
     # Save model locally
-    model_path = os.path.join(LOCAL_DATA_PATH, "models", f"{timestamp}.tflite")
+
+    if chess == True:
+        model_path = os.path.join(
+            LOCAL_DATA_PATH, "models", "chess", f"{timestamp}.tflite"
+        )
+    else:
+        model_path = os.path.join(LOCAL_DATA_PATH, "models", f"{timestamp}.tflite")
     convert_tflite(prediction_model, model_path)
 
     print("✅ Model saved locally")
@@ -33,7 +39,10 @@ def save_model(prediction_model) -> None:
 
     client = storage.Client()
     bucket = client.bucket(BUCKET_NAME)
-    blob = bucket.blob(f"models/{model_filename}")
+    if chess == True:
+        blob = bucket.blob(f"models/chess/{model_filename}")
+    else:
+        blob = bucket.blob(f"models/{model_filename}")
     blob.upload_from_filename(model_path)
 
     print("✅ Model saved to GCS")
@@ -41,12 +50,16 @@ def save_model(prediction_model) -> None:
     return None
 
 
-def load_interpreter():
+def load_interpreter(chess=False):
     BUCKET_NAME = os.environ.get("BUCKET_NAME")
     LOCAL_DATA_PATH = os.environ.get("LOCAL_DATA_PATH")
     client = storage.Client()
 
-    blobs = list(client.get_bucket(BUCKET_NAME).list_blobs(prefix="models"))
+    if chess == True:
+        prefix = "models/chess/"
+    prefix = "models"
+
+    blobs = list(client.get_bucket(BUCKET_NAME).list_blobs(prefix=prefix))
     try:
         latest_blob = max(blobs, key=lambda x: x.updated)
         latest_model_path_to_save = os.path.join(LOCAL_DATA_PATH, latest_blob.name)
@@ -96,3 +109,55 @@ def save_dictionary(dictionary, name: str) -> None:
     print(f"✅ {name} dictionary saved to GCS")
 
     return None
+
+
+def load_characters():
+    BUCKET_NAME = os.environ.get("BUCKET_NAME")
+    LOCAL_DATA_PATH = os.environ.get("LOCAL_DATA_PATH")
+    client = storage.Client()
+
+    blobs = list(client.get_bucket(BUCKET_NAME).list_blobs(prefix="characters/"))
+    try:
+        latest_blob = max(blobs, key=lambda x: x.updated)
+        latest_blob_path_to_save = os.path.join(LOCAL_DATA_PATH, latest_blob.name)
+        latest_blob.download_to_filename(latest_blob_path_to_save)
+
+        print("✅ Latest model downloaded from cloud storage")
+
+        with open(latest_blob_path_to_save, "r") as f:
+            characters = [line.strip() for line in f]
+
+        return characters
+    except:
+        print(f"\n❌ No characters list found in GCS bucket {BUCKET_NAME}")
+
+        return None
+
+
+def load_dictionary(name: str):
+    BUCKET_NAME = os.environ.get("BUCKET_NAME")
+    LOCAL_DATA_PATH = os.environ.get("LOCAL_DATA_PATH")
+    client = storage.Client()
+
+    file = f"{name}.json"
+    dictionary_path = os.path.join(LOCAL_DATA_PATH)
+
+    blobs = list(
+        client.get_bucket(BUCKET_NAME).list_blobs(prefix="dictionary/model_properties")
+    )
+    try:
+        latest_blob = max(blobs, key=lambda x: x.updated)
+        latest_blob_path_to_save = os.path.join(dictionary_path, latest_blob.name)
+        latest_blob.download_to_filename(latest_blob_path_to_save)
+
+        print("✅ Latest model downloaded from cloud storage")
+
+        with open(latest_blob_path_to_save) as json_file:
+            dictionary = json.load(json_file)
+
+        return dictionary
+
+    except:
+        print(f"\n❌ No characters list found in GCS bucket {BUCKET_NAME}")
+
+        return None

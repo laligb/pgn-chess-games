@@ -9,6 +9,7 @@ from tensorflow.keras.layers import StringLookup
 from tensorflow import keras
 from pgn_chess_games.model.properties import model_properties
 import json
+import re
 
 ## Local data path where dataset is stored
 LOCAL_DATA_PATH = os.path.join(os.environ["LOCAL_DATA_PATH"], "words")
@@ -46,7 +47,8 @@ def database_split(words_list):
 
 
 def get_image_paths_and_labels(samples):
-    LOCAL_DATA_PATH = os.path.join(os.environ["LOCAL_DATA_PATH"], "words")
+    base_path = os.path.join(os.environ["LOCAL_DATA_PATH"], "dataset", "extracted")
+    samples = [each.strip() for each in samples]
     paths = []
     corrected_samples = []
     for i, file_line in enumerate(samples):
@@ -56,11 +58,8 @@ def get_image_paths_and_labels(samples):
         # Each line split will have this format for the corresponding image:
         # part1/part1-part2/part1-part2-part3.png
         image_name = line_split[0]
-        partI = image_name.split("-")[0]
-        partII = image_name.split("-")[1]
-        img_path = os.path.join(
-            LOCAL_DATA_PATH, partI, partI + "-" + partII, image_name + ".png"
-        )
+
+        img_path = os.path.join(base_path, image_name)
         if os.path.getsize(img_path):
             paths.append(img_path)
             corrected_samples.append(file_line.split("\n")[0])
@@ -181,8 +180,7 @@ def process_images_labels(image_path, label):
     return {"image": image, "label": label}
 
 
-def prepare_dataset(image_paths, labels, prediction=False):
-    batch_size = 64
+def prepare_dataset(image_paths, labels, prediction=False, batch_size=64):
     AUTOTUNE = tensorflow.data.AUTOTUNE
     dataset = tensorflow.data.Dataset.from_tensor_slices((image_paths, labels)).map(
         process_images_labels, num_parallel_calls=AUTOTUNE
@@ -190,53 +188,15 @@ def prepare_dataset(image_paths, labels, prediction=False):
     return dataset.batch(batch_size).cache().prefetch(AUTOTUNE)
 
 
-def process_prediction_images(image_path):
-    image = preprocess_image(image_path)
-    return {"image": image}
+def prepare_predict_ds(path):
+    predict_image_folder = os.listdir(path)
+    predict_image_paths = [os.path.join(path, x) for x in predict_image_folder]
+    predict_image_paths.sort(key=lambda x: int(re.findall(r"\d+", x)[0]))
 
-
-def prepare_prediction_dataset(image_paths):
-    batch_size = 64
-    AUTOTUNE = tensorflow.data.AUTOTUNE
-    dataset = tensorflow.data.Dataset.from_tensor_slices((image_paths)).map(
-        process_prediction_images, num_parallel_calls=AUTOTUNE
+    pred_ds = prepare_dataset(
+        predict_image_paths,
+        ["blank" for each in predict_image_paths],
+        prediction=True,
+        batch_size=180,
     )
-    return dataset.batch(batch_size).cache().prefetch(AUTOTUNE)
-
-
-def preproc_predictions(image):
-    img_size = (128, 32)
-    w, h = img_size
-    image = tensorflow.image.resize(image, size=(h, w), preserve_aspect_ratio=True)
-
-    # Check tha amount of padding needed to be done.
-    pad_height = h - tensorflow.shape(image)[0]
-    pad_width = w - tensorflow.shape(image)[1]
-
-    # Only necessary if you want to do same amount of padding on both sides.
-    if pad_height % 2 != 0:
-        height = pad_height // 2
-        pad_height_top = height + 1
-        pad_height_bottom = height
-    else:
-        pad_height_top = pad_height_bottom = pad_height // 2
-
-    if pad_width % 2 != 0:
-        width = pad_width // 2
-        pad_width_left = width + 1
-        pad_width_right = width
-    else:
-        pad_width_left = pad_width_right = pad_width // 2
-
-    image = tensorflow.pad(
-        image,
-        paddings=[
-            [pad_height_top, pad_height_bottom],
-            [pad_width_left, pad_width_right],
-            [0, 0],
-        ],
-    )
-
-    image = tensorflow.transpose(image, perm=[1, 0, 2])
-    image = tensorflow.image.flip_left_right(image)
-    return image
+    return pred_ds
