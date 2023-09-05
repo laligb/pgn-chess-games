@@ -1,7 +1,8 @@
 from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pgn_chess_games.utils import *
-from pgn_chess_games.model.main import predict
+
+# from pgn_chess_games.model.main import predict
 from pgn_chess_games.api.box_extraction import box_extraction
 import os
 
@@ -61,7 +62,7 @@ async def receive_image(img: UploadFile = File(...)) -> str:
     box_extraction(file_path, cropped_dir_path)
 
     # Predict
-    list_moves = predict_batch()
+    # list_moves = predict_batch()
 
     # Delete temporary images
     print(f"Deleting temporary scoresheet file.")
