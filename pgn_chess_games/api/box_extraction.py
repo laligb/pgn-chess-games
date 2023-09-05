@@ -122,7 +122,7 @@ def save_sorted_boxes(file):
         if (w > 80 and h > 20) and w > 3 * h:
             clean_boxes.append(each)
 
-    img = cv2.imread("scoresheet.png", 0)
+    img = cv2.imread(file, 0)
     left_boxes = []
     right_boxes = []
     for each in clean_boxes:
