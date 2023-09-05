@@ -35,7 +35,7 @@ from pgn_chess_games.model.model import (
 from pgn_chess_games.model.callback import EditDistanceCallback
 from pgn_chess_games.model.predict_chess import box_extraction
 
-epochs = 50
+epochs = 2
 
 
 def run_model_chess():
@@ -112,6 +112,10 @@ def run_model_chess():
     print(f"⏳ Initializing model")
     model, prediction_model = initialize_model(img_size)
     edit_distance_callback = EditDistanceCallback(prediction_model, validation_ds)
+    early_stopping = keras.callbacks.EarlyStopping(
+        monitor="val_loss", patience=10, verbose=False, restore_best_weights=True
+    )
+
     print(f"✅ Model initialized")
 
     # Train the model.
@@ -121,7 +125,7 @@ def run_model_chess():
         train_ds,
         validation_data=validation_ds,
         epochs=epochs,
-        callbacks=[edit_distance_callback],
+        callbacks=[edit_distance_callback, early_stopping],
     )
 
     save_model(prediction_model, chess=True)
