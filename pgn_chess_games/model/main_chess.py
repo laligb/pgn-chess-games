@@ -35,7 +35,7 @@ from pgn_chess_games.model.model import (
 from pgn_chess_games.model.callback import EditDistanceCallback
 from pgn_chess_games.model.predict_chess import box_extraction
 
-epochs = 2
+epochs = 50
 
 
 def run_model_chess():
@@ -86,8 +86,6 @@ def run_model_chess():
 
     AUTOTUNE = tensorflow.data.AUTOTUNE
 
-    save_dictionary(model_properties_dict, "model_properties")
-
     characters = model_properties_dict["characters"]
     max_len = model_properties_dict["max_len"]
 
@@ -98,11 +96,6 @@ def run_model_chess():
     num_to_char = tensorflow.keras.layers.experimental.preprocessing.StringLookup(
         vocabulary=char_to_num.get_vocabulary(), mask_token=None, invert=True
     )
-
-    num_to_char_dict, char_to_num_dict = save_num_char_dict(model_properties.characters)
-
-    save_dictionary(num_to_char_dict, "num_to_char_dict")
-    save_dictionary(char_to_num_dict, "char_to_num_dict")
 
     img_size = (128, 32)
 
@@ -128,7 +121,13 @@ def run_model_chess():
         callbacks=[edit_distance_callback, early_stopping],
     )
 
+    ## Save everything to BUCKET
     save_model(prediction_model, chess=True)
+
+    num_to_char_dict, char_to_num_dict = save_num_char_dict(model_properties.characters)
+    save_dictionary(model_properties_dict, "model_properties")
+    save_dictionary(num_to_char_dict, "num_to_char_dict")
+    save_dictionary(char_to_num_dict, "char_to_num_dict")
 
 
 def predict_chess(cropped_dir_path):
@@ -161,7 +160,7 @@ if __name__ == "__main__":
     LOCAL_DATA_PATH = os.environ["LOCAL_DATA_PATH"]
     PRED_PATH = os.path.join(LOCAL_DATA_PATH, "prediction/")
     img_for_box_extraction_path = (
-        "/root/code/laligb/pgn-chess-games/data/data/017_0.png"
+        "/root/code/laligb/pgn-chess-games/data/data/086_1.png"
     )
     box_extraction(img_for_box_extraction_path, PRED_PATH)
 
