@@ -47,7 +47,9 @@ def database_split(words_list):
 
 
 def get_image_paths_and_labels(samples):
-    base_path = os.path.join(os.environ["LOCAL_DATA_PATH"], "dataset", "extracted")
+    base_path = os.path.join(
+        os.environ["LOCAL_DATA_PATH"], "dataset", "extracted_alternative"
+    )
     samples = [each.strip() for each in samples]
     paths = []
     corrected_samples = []
