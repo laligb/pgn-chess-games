@@ -8,8 +8,8 @@ filedir = os.path.join("data", "dataset")
 files = os.listdir(filedir)
 print(f"Opening {filedir}")
 
-output = open("output.csv", "w")
-output.write("filename, pgn, missed\n")
+output = open("output_2.csv", "w")
+output.write("filename,pgn,missed\n")
 print("Writing output.csv")
 
 responses = {}
@@ -21,8 +21,8 @@ for file in files:
         response = requests.post(url, files=attach)
         pgn = response.json()["pgn"]
         missed = pgn.count("missed")
-        output.write(f"{file}, {pgn}, {missed}\n")
-        print(f"{file}, {pgn}, {missed}\n")
+        output.write(f"{file},{pgn},{missed}\n")
+        print(f"{missed} missed moves.\n")
 
 print("Finished saving output.csv")
 print("Loading DataFrame...")
@@ -30,9 +30,9 @@ print("Loading DataFrame...")
 df = pd.read_csv("output.csv", header=0)
 df = df.sort_values("missed")
 
-print("Saving ordered_output.csv")
+print("Saving ordered_output_2.csv")
 
-df.to_csv("ordered_output.csv")
+df.to_csv("ordered_output_2.csv")
 
 print("Best files to try:")
 
