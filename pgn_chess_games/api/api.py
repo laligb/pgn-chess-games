@@ -1,5 +1,4 @@
 from fastapi import FastAPI, File, UploadFile
-from fastapi.responses import PlainTextResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pgn_chess_games.utils import *
 from pgn_chess_games.model.main_chess import predict_chess
@@ -100,4 +99,4 @@ async def receive_image(img: UploadFile = File(...)):
 
     pgn_moves = json_to_pgn(json_moves)
 
-    return PlainTextResponse(pgn_moves)
+    return {"pgn": pgn_moves}

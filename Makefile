@@ -15,6 +15,7 @@ run_model_chess:
 	@python -c 'from pgn_chess_games.model.main_chess import run_model_chess; run_model_chess()'
 
 prepare_dirs:
+	@[ -d ./images ] || mkdir -p ./images
 	@[ -d ./data ] || mkdir -p ./data
 	@[ -d ./data/models ] || mkdir -p ./data/models
 	@[ -d ./data/models/chess ] || mkdir -p ./data/models/chess
@@ -22,6 +23,7 @@ prepare_dirs:
 	@[ -d ./data/dictionary ] || mkdir -p ./data/dictionary
 	@[ -d ./data/temp ] || mkdir -p ./data/temp
 	@[ -d ./data/temp/crop ] || mkdir -p ./data/temp/crop
+	@[ -d ./data/temp/neworder ] || mkdir -p ./data/temp/neworder
 	@[ -d ./data/characters ] || mkdir -p ./data/characters
 	@[ -d ./data/"extracted move boxes" ] || mkdir -p ./data/"extracted move boxes"
 
@@ -45,10 +47,10 @@ push_docker_api:
 	@docker push eu.gcr.io/pgn-chess-games/chess
 
 run_docker_train:
-	@docker run -d -it --rm --env-file .env --runtime=nvidia davidrosillo/chess
+	@docker run -it --rm --env-file .env --runtime=nvidia davidrosillo/chess
 
 run_docker_api:
-	@docker run -d -e PORT=8000 -p 8080:8000 --env-file .env eu.gcr.io/pgn-chess-games/chess
+	@docker run -e PORT=8000 -p 8080:8000 --env-file .env eu.gcr.io/pgn-chess-games/chess
 
 run_gcloud_api:
 	@gcloud run deploy --image eu.gcr.io/pgn-chess-games/chess --memory 2Gi --region europe-west1 --env-vars-file .env.yaml
