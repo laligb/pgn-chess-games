@@ -63,6 +63,7 @@ def load_interpreter(chess=False):
 
     try:
         latest_blob = max(blobs, key=lambda x: x.updated)
+        # latest_blob = blobs[5]
         latest_model_path_to_save = os.path.join(LOCAL_DATA_PATH, latest_blob.name)
         latest_blob.download_to_filename(latest_model_path_to_save)
 
