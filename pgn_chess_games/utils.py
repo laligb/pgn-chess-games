@@ -142,26 +142,27 @@ def json_to_pgn(json_moves: dict) -> str:
 
     """
     total_moves = len(json_moves["white"]) + 1
-    legal_moves = []
-    with open("legal_moves.txt", "r") as txt_moves:
-        legal_moves = [txt_move.replace("\n", "") for txt_move in txt_moves]
-
-    legal_moves.append("O-O")
-    legal_moves.append("O-0-O")
-    print(legal_moves)
-
+    # legal_moves = []
+    # with open("legal_moves.txt", "r") as txt_moves:
+    #     legal_moves = [txt_move.replace("\n", "") for txt_move in txt_moves]
+    #
+    # legal_moves.append("O-O")
+    # legal_moves.append("O-0-O")
+    #
     pgn_moves = ""
 
     for move in range(1, total_moves):
-        if json_moves["white"][move - 1] in legal_moves:
-            pgn_moves += f"{str(move)}.{json_moves['white'][move-1]}"
+        if "[UNK]" not in json_moves["white"][move - 1].strip():
+            pgn_moves += f"{str(move)}.{json_moves['white'][move-1].strip()}"
         else:
-            pgn_moves += f"{str(move)}.missed"
+            pgn_moves += f"{str(move)}.[{json_moves['white'][move-1].strip().replace('[UNK]','')}]"
 
         if move <= len(json_moves["black"]):
-            if json_moves["black"][move - 1] in legal_moves:
-                pgn_moves += f" {json_moves['black'][move-1]} "
+            if "[UNK]" not in json_moves["black"][move - 1].strip():
+                pgn_moves += f" {json_moves['black'][move-1].strip()} "
             else:
-                pgn_moves += " missed "
+                pgn_moves += (
+                    f" [{json_moves['black'][move-1].strip().replace('[UNK]','')}] "
+                )
 
     return pgn_moves
