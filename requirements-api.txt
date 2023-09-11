@@ -1,6 +1,5 @@
 pandas
 numpy
-tensorflow
 streamlit
 matplotlib
 seaborn
@@ -20,3 +19,5 @@ requests
 python-multipart
 Pillow
 scikit-image
+google-cloud-storage
+tensorflow

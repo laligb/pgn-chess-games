@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "pgn-chess-games",
+  "private_key_id": "b15121f9865c6aa6ae0d3f2071dac6b90be18fba",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQC1gwvkE6lfJYaU\nsZO913SYhO992siLkXWbXDng2mKcMxSWfkM/gqmI1w2w/UUITbfQYBgwbX2Wgg/6\nfKyjfLKmyqrGW6Yf94v95dim9qNWlRI4t4RLJdxRDzs8Hqjuts91C03tLDTzUs/y\nzpDzZC3cMKtLnd6jAQ9dPbcSZkMZ2iZZ/avyS1sQD4hs0xFAehNe6xZrSMKJY2Lc\n5KKs3CSiEMq/tHxVTY3pcQBJzaAlRqDK8Ah0zux3N+hzpcpZiGX9K3rBKoabggk7\nNFKblXkRPj/2DizwosCqMbB0IuH39JhPyWnpJNAlAUQ9icwQsLyTR+Iyuc3pUgGA\n4078WMurAgMBAAECggEAOIk54e+R2NX6ZkQtbXs3kO4PHpdP0dEb3alLSdMb1eU/\nK2Tmk1iib8H0PMWWg/CZKWlU/3iLHp8iVPYSW9XSW4tSx/fx9ZEIZKv74H2AAM7r\n3wiiRznitsjUvXQbUEdWtPExc4dKcuO/a7SVh4oTkrsCD8p7dzA0VemMJUn+6oT1\nmXZrZ56DmwAQPKKoujXIwOwHvWofyS7Zrnw/4q/BFUVnoIfmO12ELigY91HXxA5c\nVN2NjvyXWuFt8a2zAnnOAc+LdDY6fUxEP/zW/7OXRky85VCaOREDDGCYkDC6ouCs\nuR9xSV64veKPIzer8WhfjjfaI350s/csLSdOSma0wQKBgQD6HIjIqZRE3gX4fASH\nIaojkClJQmO/ire92Zgi3gVMYqzfoxTahjGpoUUWUcB377KJUVyro1zjPzo4cyJN\nr8HSGx0Q1ZlzJF65pOlUwhNqrxjNCeOV9PaZVsOUTaAOVlIk4/WxTye2lF7vDT1b\nZAPAjUHstCAuJwPEIBXZoSmQYQKBgQC5yQzv2YPQ7/znyCM2Rc71gUTL80IgVkL3\nYM47RaUY69+coYBu1sZRRH5YNj6nylniSRsjkvoKByiuK275R/urmloyJAfH1h07\n8dQqYEQ6rf6IGoluSqcl93I2LP236HmVrFxwMSVEcptsIQao64cCvPRCVD3YqjdD\nR+cPxwzHiwKBgBwqIm0WS5AFwH5e2NOuws4Gad/KDhl/sXk7i5pBji8v3W/BmZOS\nEP2dH36H7jiTUXONKfZaCxe8Av5gWLiO1jCmxPskUodYzSHypCPbRvx4gz5zoqE8\nWJij4JpOs3tp1Q46bWxuEXbJ9nbM8t/bv2Brh8Tz87u+wPnQ8yTytQ+BAoGASrv4\ni0dJgjP33Vkh6QQd455TiWNad12b5J05eJhkeGjx87T30B5vemN+G4f+nkqE68US\nuLW4BW6py55HLtnpADfADql1w8p6yhFWkpFVAPHbEO7z170KDfjDJc3lZiSLPE0w\nhiUO48DiipWiczMDhXNzInd2xYB7aII1DaC5oE8CgYAmZ2JBYTgs6R/HP2uLmgSE\nSRu5nUYsJ+UwgMjW3l3bj8Fbx9x5jn8G5BA6qwzuStGok8U8YsRcrYvxE9217IdM\n83Vqeq54OmKY9j9nYwnX8jEYibSD8XzVly+gEmrZcjn8H6cSouhcoorAoM9NnJ2J\nyXNYlOAObKlmyB4PKnOLrQ==\n-----END PRIVATE KEY-----\n",
+  "client_email": "owner-chess@pgn-chess-games.iam.gserviceaccount.com",
+  "client_id": "118282836400977732995",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/owner-chess%40pgn-chess-games.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

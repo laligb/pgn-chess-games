@@ -6,3 +6,6 @@
 *.csv
 notebooks/
 data/
+images/
+IAM_Words/
+temp/

@@ -6,10 +6,4 @@
 *.csv
 notebooks/
 data/
-*.yaml
-gcp/
-data/
-images/
-IAM_Words/
-temp/
-characters.txt
+__pycache__/

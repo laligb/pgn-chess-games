@@ -11,7 +11,7 @@ from skimage.color import label2rgb
 import base64
 
 
-def img_base64_to_num(base64_img: str) -> int:
+def img_bytes_to_num(img: bytes) -> int:
     """Transform image in bytes to numpy array.
 
     Args:
@@ -20,8 +20,8 @@ def img_base64_to_num(base64_img: str) -> int:
     Returns:
         int: 2D Numpy array.
     """
-    decoded_img = base64.b64decode(base64_img)
-    bytes_img = io.BytesIO(decoded_img)
+    # decoded_img = base64.b64decode(base64_img)
+    bytes_img = io.BytesIO(img)
     pill_img = Image.open(bytes_img)
     grayscale_img = ImageOps.grayscale(pill_img)
     nparray_img = np.array(grayscale_img)
@@ -142,11 +142,27 @@ def json_to_pgn(json_moves: dict) -> str:
 
     """
     total_moves = len(json_moves["white"]) + 1
+    # legal_moves = []
+    # with open("legal_moves.txt", "r") as txt_moves:
+    #     legal_moves = [txt_move.replace("\n", "") for txt_move in txt_moves]
+    #
+    # legal_moves.append("O-O")
+    # legal_moves.append("O-0-O")
+    #
     pgn_moves = ""
 
     for move in range(1, total_moves):
-        pgn_moves += (
-            f"{str(move)}.{json_moves['white'][move-1]} {json_moves['black'][move-1]} "
-        )
+        if "[UNK]" not in json_moves["white"][move - 1].strip():
+            pgn_moves += f"{str(move)}.{json_moves['white'][move-1].strip()}"
+        else:
+            pgn_moves += f"{str(move)}.[{json_moves['white'][move-1].strip().replace('[UNK]','')}]"
+
+        if move <= len(json_moves["black"]):
+            if "[UNK]" not in json_moves["black"][move - 1].strip():
+                pgn_moves += f" {json_moves['black'][move-1].strip()} "
+            else:
+                pgn_moves += (
+                    f" [{json_moves['black'][move-1].strip().replace('[UNK]','')}] "
+                )
 
     return pgn_moves
