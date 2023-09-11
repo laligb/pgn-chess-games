@@ -33,7 +33,6 @@ from pgn_chess_games.model.model import (
     get_predictions,
 )
 from pgn_chess_games.model.callback import EditDistanceCallback
-from pgn_chess_games.model.predict_chess import box_extraction
 
 epochs = 50
 
@@ -154,14 +153,3 @@ def predict_chess(cropped_dir_path):
         texts = decode_batch_predictions(predictions)
         print(texts)
     return texts
-
-
-if __name__ == "__main__":
-    LOCAL_DATA_PATH = os.environ["LOCAL_DATA_PATH"]
-    PRED_PATH = os.path.join(LOCAL_DATA_PATH, "prediction/")
-    img_for_box_extraction_path = (
-        "/root/code/laligb/pgn-chess-games/data/data/086_1.png"
-    )
-    box_extraction(img_for_box_extraction_path, PRED_PATH)
-
-    predict_chess(PRED_PATH)
